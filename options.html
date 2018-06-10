@@ -1,0 +1,69 @@
+<!--
+  Copyright 2018 Oriol Brufau
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE html>
+<html>
+  <meta charset="utf-8">
+  <title>Tab Counter Preferences</title>
+  <style type="text/css">
+    html {
+      font-family: sans-serif;
+    }
+    h1 {
+      font-size: large;
+    }
+    input[type = "checkbox"] {
+      vertical-align: text-bottom;
+    }
+    input[type = "color"] {
+      vertical-align: middle;
+    }
+    input ~ div {
+      padding-left: 2em;
+    }
+    input:not(:checked) ~ [data-if],
+    input:checked ~ [data-else] {
+      display: none;
+    }
+  </style>
+  <h1>Tab Counter Preferences</h1>
+  <form>
+    <div>
+      <input type="checkbox" id="useBadge" /> <label for="useBadge">Use badge.</label>
+      <div data-if>
+        <input type="checkbox" id="badgeBgColorEnabled" checked /> <input type="color" id="badgeBgColor" value="#4b4b4b" /> <label for="badgeBgColor">Badge background color.</label>
+      </div>
+      <div data-else>
+        <div>
+          <input type="checkbox" id="bgColorEnabled" /> <input type="color" id="bgColor" value="#ffffff" /> <label for="bgColor">Background color.</label>
+        </div>
+        <div>
+          <input type="checkbox" id="colorEnabled" checked /> <input type="color" id="color" value="#000000" /> <label for="color">Text color.</label>
+        </div>
+      </div>
+    </div>
+    <div>
+      <input type="checkbox" id="countAll" /> <label for="countAll">Count tabs in all windows.</label>
+    </div>
+    <div>
+      <input type="checkbox" id="debug" /> <label for="debug">Log debug info to the console (only for developers).</label>
+    </div>
+    <div>
+      <label for="titlePrefix">Text prefix for the title tooltip:</label> <input type="text" id="titlePrefix" value="Open tabs: " />
+    </div>
+    <p><input type="submit" value="Save" /> <input type="reset" value="Reset values to default" /></p>
+  </form>
+  <script type="text/javascript" src="options.js"></script>
+</html>
