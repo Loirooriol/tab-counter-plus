@@ -22,7 +22,7 @@ This WebExtension shows the number of tabs in each Firefox window. It's efficien
 
 :heavy_check_mark: Light-weight. Coded in fast vanilla-js, no bloating libraries.
 
-:sparkles: I designed and implemented new WebExtension features that allow to achieve all the above in a much more robust, simple and efficient way. They will be included in version Tab Counter Plus 2.0, targetting Firefox 62.
+:sparkles: I designed and implemented a new WebExtension feature that allows to achieve all the above in a much more robust, simple and efficient way. It's included since Tab Counter Plus version 2.0, targetting Firefox 62.
 
 ### Why another tab counter add-on?
 

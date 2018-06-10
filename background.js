@@ -17,7 +17,6 @@
 let prefs = {
   countAll: false,
   useBadge: false,
-  debug: false,
   bgColor: "#ffffff",
   bgColorEnabled: false,
   badgeBgColor: "#4b4b4b",
@@ -27,19 +26,40 @@ let prefs = {
   titlePrefix: "Open tabs: ",
 };
 
-let hash = Object.create(null);
-let imageData;
-const allWindows = Symbol();
+let numTabs = new Map();
+let lastTime = new Map();
+let allWindows = undefined;
 
-function parseColor(color, enabled) {
-  return enabled ? color.replace(/[^#\w]/g, "") : "transparent";
-}
-function setCounter(text, tabId) {
+function show(windowId, num = -1) {
+  // Debounce if there are multiple calls in a short amount of time.
+  let last = lastTime.get(windowId);
+  let notDelayed = num != -1;
+  if (notDelayed && last == -1) {
+    // There is a queued call.
+    return;
+  }
+  let now = performance.now();
+  let time = 250 - now + last;
+  if (notDelayed && time > 0) {
+    setTimeout(show, time, windowId);
+    lastTime.set(windowId, -1);
+    return;
+  }
+  lastTime.set(windowId, now);
+  if (!notDelayed) {
+    num = numTabs.get(windowId);
+  }
+
+  // Show the counter
+  let text = num + "";
   let title = prefs.titlePrefix + text;
+  browser.browserAction.setTitle({ title, windowId });
   if (prefs.useBadge) {
-    browser.browserAction.setBadgeText({ text, tabId });
-    browser.browserAction.setTitle({ title, tabId });
+    browser.browserAction.setBadgeText({ text, windowId });
   } else {
+    let parseColor = function(color, enabled) {
+      return enabled ? color.replace(/[^#\w]/g, "") : "transparent";
+    };
     let l = text.length;
     let path = "data:image/svg+xml," + encodeURIComponent(`<?xml version="1.0" encoding="utf-8"?>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
@@ -60,82 +80,23 @@ function setCounter(text, tabId) {
         ${l > 2 ? 'lengthAdjust="spacingAndGlyphs"' : ''}
       >${text}</text>
     </svg>`);
-    browser.browserAction.setIcon({ path, tabId });
-    browser.browserAction.setTitle({ title, tabId });
+    browser.browserAction.setIcon({ path, windowId });
   }
 }
 
-function clearCounter(tabId) {
-  if (prefs.useBadge) {
-    browser.browserAction.setBadgeText({ text: null, tabId });
-  } else {
-    browser.browserAction.setIcon({ imageData: null, tabId });
-  }
+function update(windowId, num) {
+  numTabs.set(windowId, num);
+  show(windowId, num);
 }
 
-async function activeTab(windowId) {
-  let tabs = await browser.tabs.query({active: true, windowId});
-  return tabs[0];
-}
-
-function getData(windowId) {
+function increase(windowId, increment) {
   if (prefs.countAll) {
     windowId = allWindows;
   }
-  let data = hash[windowId];
-  if (!data) {
-    data = Object.create(null);
-    data.count = 0;
-    hash[windowId] = data;
-  }
-  return data;
+  let num = numTabs.get(windowId) || 0;
+  num += increment;
+  update(windowId, num);
 }
-
-const update = async function (windowId, cause, data = getData(windowId)) {
-  // Debounce calls.
-  if (cause !== "delayed" && data.lastTime == -1) {
-    // There is a queued call.
-    if (prefs.debug) console.log(cause, windowId, "avoided");
-    return;
-  }
-  let now = performance.now();
-  let time = 250 - now + data.lastTime;
-  if (cause !== "delayed" && time > 0) {
-    setTimeout(update, time, windowId, "delayed");
-    data.lastTime = -1;
-    return;
-  }
-  data.lastTime = now;
-
-  if (prefs.debug) console.log(cause, windowId, {...data});
-
-  if (prefs.countAll) {
-    let text = data.count + "";
-    setCounter(text);
-    return;
-  }
-
-  // Get active tab
-  if (data.active == null) {
-    let tab = await activeTab(windowId);
-    if (!tab) {
-      // Can happen when focusing a window with no tabs, e.g. the browser console.
-      return;
-    }
-    data.active = tab.id;
-  }
-
-  let text = data.count + "";
-
-  // Update the active tab
-  setCounter(text, data.active);
-
-  // Set as the new default
-  let {focused} = await browser.windows.get(windowId);
-  if (focused) {
-    setCounter(text);
-  }
-};
 
 (async () => {
   prefs = await browser.storage.local.get(prefs);
@@ -151,72 +112,30 @@ const update = async function (windowId, cause, data = getData(windowId)) {
   }
 
   browser.tabs.onCreated.addListener(function ({windowId}) {
-    // Creating a tab increases the counter.
-    let data = getData(windowId);
-    data.count += 1;
-    update(windowId, "onCreated", data);
+    increase(windowId, +1);
   });
   browser.tabs.onRemoved.addListener(function (tabId, {windowId, isWindowClosing}) {
-    // Removing a tab decreases the counter.
-    if (!prefs.countAll && isWindowClosing) {
-      delete hash[windowId];
-      return;
+    if (!isWindowClosing) {
+      increase(windowId, -1);
     }
-    let data = getData(windowId);
-    if (!prefs.countAll && data.active === tabId) {
-      data.active = null;
-    }
-    data.count -= 1;
-    // If multiple tabs are removed, this one could not be the active one but another might.
-    // Therefore don't synchronously update, wait a bit so that the active tab can be unset.
-    setTimeout(update, 0, windowId, "onRemoved", data);
   });
   if (!prefs.countAll) {
-    browser.windows.onFocusChanged.addListener(function (windowId) {
-      // Update the default when focused window changes.
-      update(windowId, "onFocusChanged");
-    });
-    browser.tabs.onActivated.addListener(function ({windowId, tabId}) {
-      // An activated tab could have an old counter, update it.
-      let data = getData(windowId);
-      if (data.active != null) {
-        try {
-          clearCounter(data.active);
-        } catch (err) {
-          // Tab-specific browserAction cannot be cleared before Firefox 59.
-        }
-      }
-      data.active = tabId;
-      update(windowId, "onActivated", data);
-    });
-    browser.tabs.onUpdated.addListener(function (tabId, {status}, {active, windowId}) {
-      if (status && active) {
-        // An active tab navigated to a new page and its tab-specific
-        // browserAction was cleared. It needs to be restored.
-        update(windowId, "onUpdated");
-      }
-    });
     browser.tabs.onAttached.addListener(function (tabId, {newWindowId}) {
-      let data = getData(newWindowId);
-      data.count += 1;
-      update(newWindowId, "onAttached", data);
+      increase(newWindowId, +1);
     });
     browser.tabs.onDetached.addListener(function (tabId, {oldWindowId}) {
-      let data = getData(oldWindowId);
-      data.count -= 1;
-      update(oldWindowId, "onDetached", data);
+      increase(oldWindowId, -1);
     });
-    for (let {windowId, id} of await browser.tabs.query({active: true})) {
-      let tabs = await browser.tabs.query({ windowId });
-      let data = getData(windowId);
-      data.count = tabs.length;
-      data.active = id;
-      update(windowId, "initial", data);
+    browser.windows.onRemoved.addListener(function (windowId) {
+      numTabs.delete(windowId);
+      lastTime.delete(windowId);
+    });
+    let windows = await browser.windows.getAll({populate: true});
+    for (let {id, tabs: {length}} of windows) {
+      update(id, length);
     }
   } else {
     let tabs = await browser.tabs.query({});
-    let data = getData(allWindows);
-    data.count = tabs.length;
-    update(allWindows, "initial", data);
+    update(allWindows, tabs.length);
   }
 })();
