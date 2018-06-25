@@ -111,6 +111,17 @@ function increase(windowId, increment) {
     browser.browserAction.setBadgeBackgroundColor({color});
   }
 
+  // The windowId parameter was added in Firefox 62, polyfill it for previous versions.
+  try {
+    browser.browserAction.getBadgeText({windowId: browser.windows.WINDOW_ID_CURRENT});
+  } catch (error) {
+    windowIdPolyfill({
+      title: "setTitle",
+      text: "setBadgeText",
+      path: "setIcon",
+    }, prefs.countAll);
+  }
+
   browser.tabs.onCreated.addListener(function ({windowId}) {
     increase(windowId, +1);
   });
