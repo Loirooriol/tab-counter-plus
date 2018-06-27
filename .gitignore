@@ -1,0 +1,5 @@
+# Directories not to be packaged:
+_local
+artifacts
+
+**/*.sw*

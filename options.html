@@ -41,17 +41,17 @@
   <h1>Tab Counter Preferences</h1>
   <form>
     <div>
-      <input type="checkbox" id="useBadge" /> <label for="useBadge">Use badge.</label>
-      <div data-if>
-        <input type="checkbox" id="badgeBgColorEnabled" checked /> <input type="color" id="badgeBgColor" value="#4b4b4b" /> <label for="badgeBgColor">Badge background color.</label>
+      <div>
+        <input type="checkbox" id="bgColorEnabled" /> <input type="color" id="bgColor" /> <label for="bgColor">Background color.</label>
       </div>
-      <div data-else>
-        <div>
-          <input type="checkbox" id="bgColorEnabled" /> <input type="color" id="bgColor" value="#ffffff" /> <label for="bgColor">Background color.</label>
-        </div>
-        <div>
-          <input type="checkbox" id="colorEnabled" checked /> <input type="color" id="color" value="#000000" /> <label for="color">Text color.</label>
-        </div>
+      <div>
+        <input type="checkbox" id="colorEnabled" /> <input type="color" id="color" /> <label for="color">Text color.</label>
+      </div>
+      <div>
+        <input type="number" id="maxFontSize" /> <label for="maxFontSize">Max Font Size</label>
+      </div>
+      <div>
+        <input type="number" id="fontWeight" min="100" max="900" step="100"/> <label for="fontWeight">Font Weight</label>
       </div>
     </div>
     <div>
