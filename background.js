@@ -16,24 +16,24 @@
 
 let prefs = {
   countAll: false,
-  useBadge: false,
   bgColor: "#ffffff",
   bgColorEnabled: false,
-  badgeBgColor: "#4b4b4b",
-  badgeBgColorEnabled: true,
   color: "#000000",
   colorEnabled: true,
   titlePrefix: "Open tabs: ",
+  maxFontSize: 18,
+  fontWeight: 100
 };
 
-let numTabs = new Map();
+let tabCounts = new Map();
+let tabIndexes = new Map();
 let lastTime = new Map();
 let allWindows = undefined;
 
-function show(windowId, num = -1) {
+function updateIcon(windowId, tabNum = -1, tabCount = -1) {
   // Debounce if there are multiple calls in a short amount of time.
   let last = lastTime.get(windowId);
-  let notDelayed = num != -1;
+  let notDelayed = tabNum != -1 && tabCount != -1;
   if (notDelayed && last == -1) {
     // There is a queued call.
     return;
@@ -41,62 +41,68 @@ function show(windowId, num = -1) {
   let now = performance.now();
   let time = 250 - now + last;
   if (notDelayed && time > 0) {
-    setTimeout(show, time, windowId);
+    setTimeout(updateIcon, time, windowId);
     lastTime.set(windowId, -1);
     return;
   }
   lastTime.set(windowId, now);
   if (!notDelayed) {
-    num = numTabs.get(windowId);
+    tabNum = tabIndexes.get(windowId);
+    tabCount = tabCounts.get(windowId);
   }
 
   // Show the counter
-  let text = num + "";
+  let text = tabNum + "/" + tabCount;
   let title = prefs.titlePrefix + text;
   browser.browserAction.setTitle({ title, windowId });
-  if (prefs.useBadge) {
-    browser.browserAction.setBadgeText({ text, windowId });
-  } else {
-    let parseColor = function(color, enabled) {
-      return enabled ? color.replace(/[^#\w]/g, "") : "transparent";
-    };
-    let l = text.length;
-    let path = "data:image/svg+xml," + encodeURIComponent(`<?xml version="1.0" encoding="utf-8"?>
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <style type="text/css"><![CDATA[
-      text {
-        dominant-baseline: central;
-        font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
-        font-size: ${14-l}px;
-        text-anchor: middle;
-        fill: ${parseColor(prefs.color, prefs.colorEnabled)};
-      }
-      svg {
-        background-color: ${parseColor(prefs.bgColor, prefs.bgColorEnabled)};
-      }
-      ]]></style>
-      <text x="50%" y="50%"
-        ${l > 2 ? 'textLength="100%"' : ''}
-        ${l > 2 ? 'lengthAdjust="spacingAndGlyphs"' : ''}
-      >${text}</text>
-    </svg>`);
-    browser.browserAction.setIcon({ path, windowId });
-  }
+
+  let parseColor = function(color, enabled) {
+    return enabled ? color.replace(/[^#\w]/g, "") : "transparent";
+  };
+  let len = text.length;
+  let fontSize = 20-len;
+  if(fontSize > prefs.maxFontSize) fontSize = prefs.maxFontSize;
+  // for text-anchor below: Can use 'start' and replace x="50%" below with x="0%"...
+  let path = "data:image/svg+xml," + encodeURIComponent(`<?xml version="1.0" encoding="utf-8"?>
+  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="56" height="28">
+    <style type="text/css"><![CDATA[
+    text {
+      dominant-baseline: central;
+      font-family: Consolas, monospace;
+      font-size: ${fontSize}px;
+      font-weight: ${prefs.fontWeight};
+      text-anchor: middle;
+      fill: ${parseColor(prefs.color, prefs.colorEnabled)};
+    }
+    svg {
+      background-color: ${parseColor(prefs.bgColor, prefs.bgColorEnabled)};
+    }
+    ]]></style>
+    <text x="50%" y="50%"
+      ${len > 8 ? 'textLength="100%"' : ''}
+      ${len > 8 ? 'lengthAdjust="spacingAndGlyphs"' : ''}
+    >${text}</text>
+  </svg>`);
+  browser.browserAction.setIcon({ path, windowId });
+  
 }
 
-function update(windowId, num) {
-  numTabs.set(windowId, num);
-  show(windowId, num);
-}
+function updateTabIndexAndCount(windowId, zeroBasedTabIndex, tabCount) {
+  var tabIndex = zeroBasedTabIndex+1;
+  tabIndexes.set(windowId, tabIndex);
+  tabCounts.set(windowId, tabCount);
+  updateIcon(windowId, tabIndex, tabCount);
+};
 
-function increase(windowId, increment) {
+function incrementTabCount(windowId, increment) {
   if (prefs.countAll) {
     windowId = allWindows;
   }
-  let num = numTabs.get(windowId) || 0;
-  num += increment;
-  update(windowId, num);
+  let tabCount = tabCounts.get(windowId) || 0;
+  tabCount += increment;
+  updateTabIndexWithTabCount(windowId, tabCount)
 }
+
 
 (async () => {
   prefs = await browser.storage.local.get(prefs);
@@ -105,11 +111,6 @@ function increase(windowId, increment) {
       sendResponse(prefs);
     }
   });
-
-  if (prefs.useBadge) {
-    let color = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
-    browser.browserAction.setBadgeBackgroundColor({color});
-  }
 
   // The windowId parameter was added in Firefox 62, polyfill it for previous versions.
   try {
@@ -122,31 +123,75 @@ function increase(windowId, increment) {
     }, prefs.countAll);
   }
 
-  browser.tabs.onCreated.addListener(function ({windowId}) {
-    increase(windowId, +1);
+  browser.windows.onCreated.addListener(function ({id}) {
+    incrementTabCount(id, +1);
   });
+
+  browser.tabs.onCreated.addListener(function ({windowId}) {
+    incrementTabCount(windowId, +1);
+  });
+
   browser.tabs.onRemoved.addListener(function (tabId, {windowId, isWindowClosing}) {
     if (!isWindowClosing) {
-      increase(windowId, -1);
+      incrementTabCount(windowId, -1);
     }
   });
+
+  browser.tabs.onActivated.addListener(({windowId, tabId}) => {
+    updateTabIndexByTabId(windowId, tabId);
+  });
+
+  browser.tabs.onMoved.addListener((tabId, moveInfo) => {
+    updateTabIndexAndCount(moveInfo.windowId, moveInfo.toIndex, tabCounts.get(moveInfo.windowId));
+  });
+
   if (!prefs.countAll) {
     browser.tabs.onAttached.addListener(function (tabId, {newWindowId}) {
-      increase(newWindowId, +1);
+      incrementTabCount(newWindowId, +1);
     });
     browser.tabs.onDetached.addListener(function (tabId, {oldWindowId}) {
-      increase(oldWindowId, -1);
+      incrementTabCount(oldWindowId, -1);
     });
     browser.windows.onRemoved.addListener(function (windowId) {
-      numTabs.delete(windowId);
+      tabCounts.delete(windowId);
+      tabIndexes.delete(windowId);
       lastTime.delete(windowId);
     });
+
     let windows = await browser.windows.getAll({populate: true});
     for (let {id, tabs: {length}} of windows) {
-      update(id, length);
+      updateTabIndexWithTabCount(id, length);
     }
+
   } else {
-    let tabs = await browser.tabs.query({});
-    update(allWindows, tabs.length);
+    let tab = await browser.tabs.query({active: true});
+    updateTabIndexAndCount(allWindows, tab.index);
   }
 })();
+
+function updateTabIndexWithTabCount(windowId, tabCount) {
+  // No tabId, get the active tab:
+  var getTab = browser.tabs.query({active: true, windowId: windowId});
+
+  getTab.then((tab) => {
+      updateTabIndexAndCount(windowId, tab[0].index, tabCount);
+  });
+};
+
+function updateTabIndexByTabId(windowId, tabId) {
+  var getWindow = browser.windows.get(windowId, {populate: true});
+  var getTab = browser.tabs.get(tabId);
+
+  Promise.all([getWindow, getTab]).then((results) => {
+      var _window = results[0];
+      var tab = results[1];
+      updateTabIndexAndCount(windowId, tab.index, _window.tabs.length);
+  });
+}
+
+function updateTabIndex(windowId, tab, tabCount = -1) {
+  if(tabCount == -1) {
+      tabCount = tabCounts.get(windowId) || -2;
+  }
+  updateTabIndexAndCount(windowId, tab.index, tabCount);
+};
