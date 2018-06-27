@@ -9,12 +9,12 @@ This provides the ability to include the current tab index in addition to the to
 This is accomplished by **requiring** the following to be added to the userChrome.css file:
 ``` css
 /* Normally has right/left-padding of 1px - remove it all */
-toolbarbutton#tabs-number-plus_loirooriol-browser-action {
+toolbarbutton#tab-counter-plus-plus-jmm_jmmerz_github-browser-action {
     padding-left: 0px !important;
     padding-right: 0px !important;
 }
 /* Normally has right/left-padding of 6px - remove it all */
-toolbarbutton#tabs-number-plus_loirooriol-browser-action > .toolbarbutton-badge-stack {
+toolbarbutton#tab-counter-plus-plus-jmm_jmmerz_github-browser-action > .toolbarbutton-badge-stack {
     padding-top: 0px !important;
     padding-bottom: 0px !important;
     padding-left: 0px !important;
@@ -23,9 +23,8 @@ toolbarbutton#tabs-number-plus_loirooriol-browser-action > .toolbarbutton-badge-
 
 /* Standard height/width is 16px/16px. Tabbar height is 28px so that's pretty fixed,
  * but we can adjust width as needed. These should match the icon dimensions in the code. */
-toolbarbutton#tabs-number-plus_loirooriol-browser-action > .toolbarbutton-badge-stack > .toolbarbutton-icon {
+toolbarbutton#tab-counter-plus-plus-jmm_jmmerz_github-browser-action > .toolbarbutton-badge-stack > .toolbarbutton-icon {
     height: 28px !important;
     width: 56px !important;
 }
 ```
-
