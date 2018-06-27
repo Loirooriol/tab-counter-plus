@@ -4,7 +4,7 @@ This is a fork of Loirooriol's fantastic [Tab Counter Plus](https://github.com/L
 
 This provides the ability to include the current tab index in addition to the total number of tabs in the window.
 
-**TODO: Screenshot**
+![screenshot](docs/screenshot.png)
 
 This is accomplished by **requiring** the following to be added to the userChrome.css file:
 ``` css
