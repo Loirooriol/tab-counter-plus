@@ -22,45 +22,81 @@
       font-family: sans-serif;
     }
     h1 {
-      font-size: large;
+      font-size: 1.5em;
+      margin-bottom: 0;
+    }
+    h3 {
+      font-size: 1.2em;
+      margin-top: 1em;
+      margin-bottom: .3em;
     }
     input[type = "checkbox"] {
-      vertical-align: text-bottom;
+      vertical-align: text-top;
     }
     input[type = "color"] {
       vertical-align: middle;
     }
-    input ~ div {
-      padding-left: 2em;
-    }
-    input:not(:checked) ~ [data-if],
-    input:checked ~ [data-else] {
+    [data-if] {
       display: none;
+    }
+    input:nth-of-type(1):checked ~ [data-if ~= n1],
+    input:nth-of-type(2):checked ~ [data-if ~= n2],
+    input:nth-of-type(3):checked ~ [data-if ~= n3] {
+      display: block;
+    }
+    br[data-bigger] {
+      margin-bottom: 1.2em;
     }
   </style>
   <h1>Tab Counter Preferences</h1>
   <form>
-    <div>
-      <input type="checkbox" id="useBadge" /> <label for="useBadge">Use badge.</label>
-      <div data-if>
-        <input type="checkbox" id="badgeBgColorEnabled" checked /> <input type="color" id="badgeBgColor" value="#4b4b4b" /> <label for="badgeBgColor">Badge background color.</label>
-      </div>
-      <div data-else>
-        <div>
-          <input type="checkbox" id="bgColorEnabled" /> <input type="color" id="bgColor" value="#ffffff" /> <label for="bgColor">Background color.</label>
-        </div>
-        <div>
-          <input type="checkbox" id="colorEnabled" checked /> <input type="color" id="color" value="#000000" /> <label for="color">Text color.</label>
-        </div>
-      </div>
+    <h3>Counter style</h3>
+
+    <input type="radio" name="useBadge" id="useBadge-false" value="false" checked />
+    <label for="useBadge-false">Use SVG icon</label>
+    <br />
+
+    <input type="radio" name="useBadge" id="useBadge-true" value="true" />
+    <label for="useBadge-true">Use WebExtension badge</label>
+    <br />
+
+    <div data-if="n1 n2">
+      <h3>Counter data</h3>
+      <input type="radio" name="countAll" id="countAll-false" value="false" checked />
+      <label for="countAll-false">Count tabs separately for each window</label>
+      <br />
+
+      <input type="radio" name="countAll" id="countAll-true" value="true" />
+      <label for="countAll-true">Count total number of tabs among all windows</label>
+      <br data-bigger />
+
+      <label for="titlePrefix">Text prefix for the title tooltip:</label>
+      <input type="text" id="titlePrefix" value="Open tabs: " />
+
+      <h3>Counter colors</h3>
     </div>
-    <div>
-      <input type="checkbox" id="countAll" /> <label for="countAll">Count tabs in all windows.</label>
+
+    <div data-if="n1">
+      <input type="checkbox" id="bgColorEnabled" />
+      <input type="color" id="bgColor" value="#ffffff" />
+      <label for="bgColor">Background color</label>
+      <br />
+
+      <input type="checkbox" id="colorEnabled" checked />
+      <input type="color" id="color" value="#000000" />
+      <label for="color">Text color</label>
     </div>
-    <div>
-      <label for="titlePrefix">Text prefix for the title tooltip:</label> <input type="text" id="titlePrefix" value="Open tabs: " />
+
+    <div data-if="n2">
+      <input type="checkbox" id="badgeBgColorEnabled" checked />
+      <input type="color" id="badgeBgColor" value="#4b4b4b" />
+      <label for="badgeBgColor">Badge background color</label>
     </div>
-    <p><input type="submit" value="Save" /> <input type="reset" value="Reset values to default" /></p>
+
+    <p>
+      <input type="submit" value="Save" />
+      <input type="reset" value="Reset values to default" />
+    </p>
   </form>
   <script type="text/javascript" src="options.js"></script>
 </html>
