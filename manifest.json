@@ -3,7 +3,7 @@
   "short_name": "Tab Counter",
   "author": "Oriol Brufau",
   "homepage_url": "https://github.com/Loirooriol/tab-counter-plus",
-  "version": "2.2",
+  "version": "2.3",
   "description": "Shows the number of tabs in each window. Efficient and customizable.",
   "manifest_version": 2,
   "applications": {
@@ -13,6 +13,7 @@
     }
   },
   "icons": {
+    "16": "icon16.gif",
     "64": "icon.svg"
   },
   "permissions": [
@@ -20,7 +21,10 @@
   ],
   "browser_action": {
     "browser_style": true,
-    "default_icon": "icon.svg",
+    "default_icon": {
+      "16": "icon16.gif",
+      "64": "icon.svg"
+    },
     "default_popup": "popup.html"
   },
   "options_ui": {
