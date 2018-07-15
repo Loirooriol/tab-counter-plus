@@ -23,6 +23,8 @@ let prefs = {
   badgeBgColorEnabled: true,
   color: "#000000",
   colorEnabled: true,
+  badgeColor: "#ffffff",
+  badgeColorEnabled: true,
   titlePrefix: "Open tabs: ",
 };
 
@@ -107,8 +109,14 @@ function increase(windowId, increment) {
   });
 
   if (prefs.useBadge) {
-    let color = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
-    browser.browserAction.setBadgeBackgroundColor({color});
+    let bgColor = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
+    browser.browserAction.setBadgeBackgroundColor({color: bgColor});
+
+    // Badge text color was added in Firefox 63
+    if (browser.browserAction.setBadgeTextColor) {
+      let color = prefs.badgeColorEnabled ? prefs.badgeColor : "transparent";
+      browser.browserAction.setBadgeTextColor({color});
+    }
   }
 
   // The windowId parameter was added in Firefox 62, polyfill it for previous versions.
