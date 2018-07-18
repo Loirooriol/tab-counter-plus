@@ -134,7 +134,7 @@ function increase(windowId, increment) {
     increase(windowId, +1);
   });
   browser.tabs.onRemoved.addListener(function (tabId, {windowId, isWindowClosing}) {
-    if (!isWindowClosing) {
+    if (!isWindowClosing || prefs.countAll) {
       increase(windowId, -1);
     }
   });
