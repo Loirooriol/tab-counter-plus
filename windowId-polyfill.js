@@ -22,8 +22,10 @@ async function windowIdPolyfill(params, windowIdWillAlwaysBeUndefined) {
 
   for (let [key, method] of Object.entries(params)) {
     originalMethod[key] = browserAction[method];
-    browserAction[method] = function({windowId, ...details}) {
+    browserAction[method] = function(details) {
+      let {windowId} = details;
       if (windowIdWillAlwaysBeUndefined || windowId == null) {
+        delete details.windowId;
         return Reflect.apply(originalMethod[key], browserAction, [details]);
       }
       let data = windowData.get(windowId);
