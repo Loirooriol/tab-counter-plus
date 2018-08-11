@@ -4,6 +4,10 @@ This WebExtension shows the number of tabs in each Firefox window. It's efficien
 
 ![screenshot](https://user-images.githubusercontent.com/7477678/41196910-b9a322f6-6c4c-11e8-94f9-5f50f24a73b0.png)
 
+### Download
+
+You can download it from [Releases](https://github.com/Loirooriol/tab-counter-plus/releases) or from [Firefox Add-ons (AMO)](https://addons.mozilla.org/firefox/addon/tab-counter-plus).
+
 ### Features
 
 :heavy_check_mark: Can count the number of tabs in each window or among all.
