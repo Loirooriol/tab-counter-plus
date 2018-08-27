@@ -37,4 +37,5 @@ toolbarbutton#tab-counter-plus-plus-jmm_jmmerz_github-browser-action > .toolbarb
 * General code cleanup.
 
 #### [1.0.0](https://github.com/jmmerz/tab-counter-wide/releases/tag/v1.0.0):
-* Initial release.
+* Initial release - this provides the ability to use a 28x56px button and include the tab number in the count.
+
