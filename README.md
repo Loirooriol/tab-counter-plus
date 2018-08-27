@@ -28,3 +28,13 @@ toolbarbutton#tab-counter-plus-plus-jmm_jmmerz_github-browser-action > .toolbarb
     width: 56px !important;
 }
 ```
+
+## Version History:
+
+#### [1.2.1](https://github.com/jmmerz/move-tab-hotkeys/releases/tag/v1.1.0):
+* Various updates/improvements
+* Provide additional options for counting hidden tabs.
+* General code cleanup.
+
+#### [1.0.0](https://github.com/jmmerz/move-tab-hotkeys/releases/tag/v1.0.0):
+* Initial release.

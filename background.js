@@ -1,5 +1,6 @@
 /*
  * Copyright 2018 Oriol Brufau
+ * Additions 2018 by Jonathon Merz
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +15,76 @@
  * limitations under the License.
  */
 
+
+// Tab count UPDATE operations: These can be combined
+let UPDATE_ACTION_UPDATE_INDEX = 1;                                                                             // 0001
+let UPDATE_ACTION_UPDATE_VISIBLE_COUNT = 2;                                                                     // 0010
+let UPDATE_ACTION_UPDATE_HIDDEN_COUNT = 4;                                                                      // 0100
+let UPDATE_ACTION_UPDATE_ALL_COUNTS = UPDATE_ACTION_UPDATE_VISIBLE_COUNT | UPDATE_ACTION_UPDATE_HIDDEN_COUNT;   // 0110
+let UPDATE_ACTION_UPDATE_ALL = UPDATE_ACTION_UPDATE_ALL_COUNTS | UPDATE_ACTION_UPDATE_INDEX;                    // 0111
+
+// Tab actions - things done to a tab: These are all mutually exclusive
+let TAB_ACTION_ACTIVATED = 1;
+let TAB_ACTION_MOVED = 2;
+let TAB_ACTION_CREATED = 3;
+let TAB_ACTION_REMOVED = 4;
+
+let HIDDEN_TABS_DO_NOT_SHOW = "doNotShow";
+let HIDDEN_TABS_SHOW_WHEN_PRESENT = "showWhenPresent";
+let HIDDEN_TABS_SHOW_WHEN_ZERO = "showWhenZero";
+
 let prefs = {
-  countAll: false,
+  actionIconHeightPx: 28,
+  actionIconWidthPx: 84,
   bgColor: "#ffffff",
   bgColorEnabled: false,
-  color: "#000000",
-  colorEnabled: true,
-  titlePrefix: "Open tabs: ",
+  textColor: "#000000",
+  textColorEnabled: true,
+  hiddenTabsOption: HIDDEN_TABS_SHOW_WHEN_PRESENT,
+  titleCurrentTabPrefix:  "Current tab: ",
+  titleVisibleTabsPrefix: "Open tabs:   ",
+  titleHiddenTabsPrefix:  "Hidden tabs: ",
   maxFontSize: 18,
   fontWeight: 100
 };
 
-let tabCounts = new Map();
+function UpdateInfo(updateAction, tabAction, tabId) {
+  this.updateAction = updateAction;
+  this.tabAction = tabAction;
+  this.tabId = tabId;
+};
+
+let DEFAULT_UPDATE_INFO = new UpdateInfo(UPDATE_ACTION_UPDATE_ALL, null, null);
+
+let visibleTabCounts = new Map();
+let hiddenTabCounts = new Map();
 let tabIndexes = new Map();
 let lastTime = new Map();
-let allWindows = undefined;
+let removedTabIds = new Set();
+/**
+ * This is unfortunately necessary to handle tracking hidden/un-hidden tabs
+ * since there is no tabs.onHidden/onUnhidden event.
+ */
+let windowRecountIntervals = new Map();
 
-function updateIcon(windowId, tabNum = -1, tabCount = -1) {
+function clearWindowRecountInterval(windowId) {
+    clearInterval(windowId);
+    windowRecountIntervals.delete(windowId);
+}
+
+function setWindowRecountInterval(windowId) {
+    windowRecountIntervals.set(windowId, 
+        setInterval(() => {
+            updateTabCountsAndIndexForWindow(windowId);
+        }, 500)
+    );
+}
+
+
+function updateIcon(windowId, tabNum = -1, tabCount = -1, hiddenTabCount = -1) {
   // Debounce if there are multiple calls in a short amount of time.
   let last = lastTime.get(windowId);
-  let notDelayed = tabNum != -1 && tabCount != -1;
+  let notDelayed = tabNum != -1 && tabCount != -1 && hiddenTabCount != -1;
   if (notDelayed && last == -1) {
     // There is a queued call.
     return;
@@ -42,29 +93,34 @@ function updateIcon(windowId, tabNum = -1, tabCount = -1) {
   let time = 250 - now + last;
   if (notDelayed && time > 0) {
     setTimeout(updateIcon, time, windowId);
-    lastTime.set(windowId, -1);
+    lastTime.set(windowId, -1); // TODO: Is this logic right?
     return;
   }
   lastTime.set(windowId, now);
   if (!notDelayed) {
     tabNum = tabIndexes.get(windowId);
-    tabCount = tabCounts.get(windowId);
+    tabCount = visibleTabCounts.get(windowId);
+    hiddenTabCount = hiddenTabCounts.get(windowId);
   }
 
   // Show the counter
-  let text = tabNum + "/" + tabCount;
-  let title = prefs.titlePrefix + text;
+  let showHiddenTabs = prefs.hiddenTabsOption == HIDDEN_TABS_SHOW_WHEN_ZERO || (prefs.hiddenTabsOption == HIDDEN_TABS_SHOW_WHEN_PRESENT && hiddenTabCount > 0);
+  let text = tabNum + "/" + tabCount + (showHiddenTabs ? (" (" + hiddenTabCount + ")") : "");
+  let title = prefs.titleCurrentTabPrefix + tabNum;
+  title += "\n" + prefs.titleVisibleTabsPrefix + tabCount;
+  title += "\n" + prefs.titleHiddenTabsPrefix + hiddenTabCount;
+
   browser.browserAction.setTitle({ title, windowId });
 
   let parseColor = function(color, enabled) {
     return enabled ? color.replace(/[^#\w]/g, "") : "transparent";
   };
   let len = text.length;
-  let fontSize = 20-len;
+  let fontSize = 26-len;
   if(fontSize > prefs.maxFontSize) fontSize = prefs.maxFontSize;
   // for text-anchor below: Can use 'start' and replace x="50%" below with x="0%"...
   let path = "data:image/svg+xml," + encodeURIComponent(`<?xml version="1.0" encoding="utf-8"?>
-  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="56" height="28">
+  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="${prefs.actionIconWidthPx}" height="${prefs.actionIconHeightPx}">
     <style type="text/css"><![CDATA[
     text {
       dominant-baseline: central;
@@ -72,7 +128,7 @@ function updateIcon(windowId, tabNum = -1, tabCount = -1) {
       font-size: ${fontSize}px;
       font-weight: ${prefs.fontWeight};
       text-anchor: middle;
-      fill: ${parseColor(prefs.color, prefs.colorEnabled)};
+      fill: ${parseColor(prefs.textColor, prefs.textColorEnabled)};
     }
     svg {
       background-color: ${parseColor(prefs.bgColor, prefs.bgColorEnabled)};
@@ -84,25 +140,62 @@ function updateIcon(windowId, tabNum = -1, tabCount = -1) {
     >${text}</text>
   </svg>`);
   browser.browserAction.setIcon({ path, windowId });
-  
+
 }
 
-function updateTabIndexAndCount(windowId, zeroBasedTabIndex, tabCount) {
-  var tabIndex = zeroBasedTabIndex+1;
+function updateTabIndexAndCount(windowId, zeroBasedTabIndex, tabCount, hiddenTabCount) {
+  let tabIndex = zeroBasedTabIndex;//+1;
   tabIndexes.set(windowId, tabIndex);
-  tabCounts.set(windowId, tabCount);
-  updateIcon(windowId, tabIndex, tabCount);
+  visibleTabCounts.set(windowId, tabCount);
+  hiddenTabCounts.set(windowId, hiddenTabCount);
+  updateIcon(windowId, tabIndex, tabCount, hiddenTabCount);
 };
 
-function incrementTabCount(windowId, increment) {
-  if (prefs.countAll) {
-    windowId = allWindows;
-  }
-  let tabCount = tabCounts.get(windowId) || 0;
-  tabCount += increment;
-  updateTabIndexWithTabCount(windowId, tabCount)
-}
+function updateTabCountsAndIndexForWindow(windowId, updateInfo) {
+  let getAllTabsInWindow = browser.tabs.query({windowId: windowId});
+  getAllTabsInWindow.then((tabs) => {
+    updateTabCountsAndIndexForTabsInWindow(windowId, tabs, updateInfo);
+  });
+};
 
+function updateTabCountsAndIndexForTabsInWindow(windowId, tabs, updateInfo = DEFAULT_UPDATE_INFO) {
+  let visibleTabCount = 0;
+  let hiddenTabCount = 0;
+  let currentTabIndex = 0;
+
+  for(let tab of tabs) {
+    // If the tab was removed, and it's still in the tab list, don't count it
+    if(removedTabIds.has(tab.id)) {
+      continue;
+    }
+
+    if(tab.hidden) {
+      hiddenTabCount++;
+    } else {
+      visibleTabCount++;
+      if(tab.active) {
+        currentTabIndex = visibleTabCount;
+      }
+    }
+  }
+
+  // If we are not requested to update the visible tab count, reset the value
+  if(!(updateInfo.updateAction & UPDATE_ACTION_UPDATE_VISIBLE_COUNT)) {
+    visibleTabCount = visibleTabCounts.get(windowId);
+  }
+
+  // If we are not requested to update the hidden tab count, reset the value
+  if(!(updateInfo.updateAction & UPDATE_ACTION_UPDATE_HIDDEN_COUNT)) {
+    hiddenTabCount = hiddenTabCounts.get(windowId);
+  }
+
+  // If we are not requested to update the tab index, reset the value
+  if(!(updateInfo.updateAction & UPDATE_ACTION_UPDATE_INDEX)) {
+    currentTabIndex = tabIndexes.get(windowId);
+  }
+
+  updateTabIndexAndCount(windowId, currentTabIndex, visibleTabCount, hiddenTabCount);
+}
 
 (async () => {
   prefs = await browser.storage.local.get(prefs);
@@ -120,78 +213,77 @@ function incrementTabCount(windowId, increment) {
       title: "setTitle",
       text: "setBadgeText",
       path: "setIcon",
-    }, prefs.countAll);
+    }, false);
+  }
+
+  function markTabRemoved(tabId) {
+    removedTabIds.add(tabId);
+    // Remove this id after 1 second so we don't accumulate ids forever
+    setTimeout(() => {
+      removedTabIds.delete(tabId)
+    }, 1000);
   }
 
   browser.windows.onCreated.addListener(function ({id}) {
-    incrementTabCount(id, +1);
+    //console.log("windows.onCreated: windowId: " + id);
+    updateTabCountsAndIndexForWindow(id);
+    setWindowRecountInterval(id);
   });
 
-  browser.tabs.onCreated.addListener(function ({windowId}) {
-    incrementTabCount(windowId, +1);
+  browser.windows.onRemoved.addListener(function (windowId) {
+    //console.log("windows.onRemoved: windowId: " + windowId);
+    clearWindowRecountInterval(windowId);
+    visibleTabCounts.delete(windowId);
+    hiddenTabCounts.delete(windowId);
+    tabIndexes.delete(windowId);
+    lastTime.delete(windowId);
   });
 
+  browser.tabs.onCreated.addListener(function ({id, hidden, windowId}) {
+    //console.log("tabs.onCreated: tabId: " + id);
+    updateTabCountsAndIndexForWindow(windowId);
+  });
+
+  // When a tab is removed, if it is not because the window is closing, re-count all tabs and
+  // re-figure index, decrementing the visible tab count by 1 since the the tab will still be
+  // present in the list
   browser.tabs.onRemoved.addListener(function (tabId, {windowId, isWindowClosing}) {
+    //console.log("tabs.onRemoved: tabId: " + tabId);
     if (!isWindowClosing) {
-      incrementTabCount(windowId, -1);
+      markTabRemoved(tabId);
+      let updateInfo = new UpdateInfo(UPDATE_ACTION_UPDATE_ALL, TAB_ACTION_REMOVED, tabId);
+      updateTabCountsAndIndexForWindow(windowId, updateInfo);
     }
   });
 
   browser.tabs.onActivated.addListener(({windowId, tabId}) => {
-    updateTabIndexByTabId(windowId, tabId);
+    //console.log("tabs.onActivated: tabId: " + tabId);
+    let updateInfo = new UpdateInfo(UPDATE_ACTION_UPDATE_INDEX, TAB_ACTION_ACTIVATED, tabId);
+    updateTabCountsAndIndexForWindow(windowId, updateInfo);
   });
 
   browser.tabs.onMoved.addListener((tabId, moveInfo) => {
-    updateTabIndexAndCount(moveInfo.windowId, moveInfo.toIndex, tabCounts.get(moveInfo.windowId));
+    //console.log("tabs.onMoved: tabId: " + tabId);
+    let updateInfo = new UpdateInfo(UPDATE_ACTION_UPDATE_INDEX, TAB_ACTION_MOVED, tabId);
+    updateTabCountsAndIndexForWindow(moveInfo.windowId, updateInfo);
   });
 
-  if (!prefs.countAll) {
-    browser.tabs.onAttached.addListener(function (tabId, {newWindowId}) {
-      incrementTabCount(newWindowId, +1);
-    });
-    browser.tabs.onDetached.addListener(function (tabId, {oldWindowId}) {
-      incrementTabCount(oldWindowId, -1);
-    });
-    browser.windows.onRemoved.addListener(function (windowId) {
-      tabCounts.delete(windowId);
-      tabIndexes.delete(windowId);
-      lastTime.delete(windowId);
-    });
+  browser.tabs.onAttached.addListener(function (tabId, {newWindowId}) {
+    //console.log("tabs.onAttached: tabId: " + tabId);
+    updateTabCountsAndIndexForWindow(newWindowId);
+  });
 
-    let windows = await browser.windows.getAll({populate: true});
-    for (let {id, tabs: {length}} of windows) {
-      updateTabIndexWithTabCount(id, length);
-    }
+  browser.tabs.onDetached.addListener(function (tabId, {oldWindowId}) {
+    //console.log("tabs.onDetached: tabId: " + tabId);
+    updateTabCountsAndIndexForWindow(oldWindowId);
+  });
 
-  } else {
-    let tab = await browser.tabs.query({active: true});
-    updateTabIndexAndCount(allWindows, tab.index);
+  // Initialize the counts at startup
+  let windows = await browser.windows.getAll({populate: true});
+  for (let {id, tabs} of windows) {
+    updateTabCountsAndIndexForTabsInWindow(id, tabs);
+    setWindowRecountInterval(id);
   }
+
 })();
 
-function updateTabIndexWithTabCount(windowId, tabCount) {
-  // No tabId, get the active tab:
-  var getTab = browser.tabs.query({active: true, windowId: windowId});
-
-  getTab.then((tab) => {
-      updateTabIndexAndCount(windowId, tab[0].index, tabCount);
-  });
-};
-
-function updateTabIndexByTabId(windowId, tabId) {
-  var getWindow = browser.windows.get(windowId, {populate: true});
-  var getTab = browser.tabs.get(tabId);
-
-  Promise.all([getWindow, getTab]).then((results) => {
-      var _window = results[0];
-      var tab = results[1];
-      updateTabIndexAndCount(windowId, tab.index, _window.tabs.length);
-  });
-}
-
-function updateTabIndex(windowId, tab, tabCount = -1) {
-  if(tabCount == -1) {
-      tabCount = tabCounts.get(windowId) || -2;
-  }
-  updateTabIndexAndCount(windowId, tab.index, tabCount);
-};

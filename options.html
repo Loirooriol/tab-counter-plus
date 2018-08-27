@@ -1,5 +1,6 @@
 <!--
   Copyright 2018 Oriol Brufau
+  Additions 2018 by Jonathon Merz
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -22,45 +23,133 @@
       font-family: sans-serif;
     }
     h1 {
-      font-size: large;
+      font-size: 1.5em;
+      margin-bottom: 0;
+    }
+    h3 {
+      font-size: 1.2em;
+      margin-top: 1em;
+      margin-bottom: .3em;
     }
     input[type = "checkbox"] {
-      vertical-align: text-bottom;
+      vertical-align: text-top;
     }
     input[type = "color"] {
       vertical-align: middle;
     }
-    input ~ div {
-      padding-left: 2em;
+    label {
+      display: inline-block;
+      min-width: 165px;
+      text-align: left;
     }
-    input:not(:checked) ~ [data-if],
-    input:checked ~ [data-else] {
+    [data-if] {
       display: none;
+    }
+    input:nth-of-type(1):checked ~ [data-if ~= n1],
+    input:nth-of-type(2):checked ~ [data-if ~= n2],
+    input:nth-of-type(3):checked ~ [data-if ~= n3] {
+      display: block;
+    }
+    input#bgColorEnabled:checked ~ [data-if ~= bgColorEnabled],
+    input#bgColorEnabled:not(:checked) ~ [data-if ~= bgColorDisabled],
+    input#textColorEnabled:checked ~ [data-if ~= textColorEnabled],
+    input#textColorEnabled:not(:checked) ~ [data-if ~= textColorDisabled] {
+      display: inline;
+    }
+    br[data-bigger] {
+      margin-bottom: 1.2em;
     }
   </style>
   <h1>Tab Counter Preferences</h1>
   <form>
+    <h2>Counter style</h3>
+
+    <!--
+    <input type="radio" name="useBadge" id="useBadge-false" value="false" checked />
+    <label for="useBadge-false">Use SVG icon</label>
+    <br />
+
+    <input type="radio" name="useBadge" id="useBadge-true" value="true" />
+    <label for="useBadge-true">Use WebExtension badge</label>
+    <br />
+    -->
+
     <div>
-      <div>
-        <input type="checkbox" id="bgColorEnabled" /> <input type="color" id="bgColor" /> <label for="bgColor">Background color.</label>
-      </div>
-      <div>
-        <input type="checkbox" id="colorEnabled" /> <input type="color" id="color" /> <label for="color">Text color.</label>
-      </div>
-      <div>
-        <input type="number" id="maxFontSize" /> <label for="maxFontSize">Max Font Size</label>
-      </div>
-      <div>
-        <input type="number" id="fontWeight" min="100" max="900" step="100"/> <label for="fontWeight">Font Weight</label>
-      </div>
+      <h3>Hidden Tab Behavior</h3>
+      <input type="radio" name="hiddenTabsOption" id="hiddenTabsOption-doNotShow" value="doNotShow" checked />
+      <label for="hiddenTabsOption-doNotShow">Do not show hidden tab count</label>
+      <br />
+
+      <input type="radio" name="hiddenTabsOption" id="hiddenTabsOption-showWhenPresent" value="showWhenPresent" checked />
+      <label for="hiddenTabsOption-showWhenPresent">Show hidden tab count only if there are hidden tabs</label>
+      <br />
+
+      <input type="radio" name="hiddenTabsOption" id="hiddenTabsOption-showWhenZero" value="showWhenZero" />
+      <label for="hiddenTabsOption-showWhenZero">Show hidden tab count even if there are no hidden tabs</label>
+      <br data-bigger />
+
+      <h3>Tooltip data</h3>
+      <label for="titleCurrentTabPrefix">Text prefix for the current tab</label>
+      <input type="text" id="titleCurrentTabPrefix" value="Current Tab: " />
+      <br />
+
+      <label for="titleVisibleTabsPrefix">Text prefix for the visible tabs</label>
+      <input type="text" id="titleVisibleTabsPrefix" value="Open tabs: " />
+      <br />
+
+      <label for="titleHiddenTabsPrefix">Text prefix for the hidden tabs</label>
+      <input type="text" id="titleHiddenTabsPrefix" value="Hidden tabs: " />
+      <br data-bigger />
+
+      <h3>Counter colors</h3>
     </div>
+
     <div>
-      <input type="checkbox" id="countAll" /> <label for="countAll">Count tabs in all windows.</label>
+      <label for="bgColor">Background color:</label>
+      <input type="checkbox" id="bgColorEnabled" />
+      <input type="color" id="bgColor" value="#ffffff" data-if="bgColorEnabled" />
+      <input type="color" id="bgColor" value="#ffffff" data-if="bgColorDisabled" disabled />
+      <br />
+
+      <label for="textColor">Text color:</label>
+      <input type="checkbox" id="textColorEnabled" checked />
+      <input type="color" id="textColor" value="#000000" data-if="textColorEnabled" />
+      <input type="color" id="textColor" value="#000000" data-if="textColorDisabled" disabled />
+      <br />
+
+      <h3>Counter Size</h3> <!-- TODO: EXPLAIN: Must match userChrome.css -->
+      <label for="actionIconWidthPx">Counter icon width (px)</label>
+      <input type="number" id="actionIconWidthPx" value="84" />
+      <label for="actionIconWidthPx"><i>(Set to the <b>width:</b> attribute used in userChrome.css)</i></label>
+      <br />
+
+      <label for="actionIconHeightPx">Counter icon height (px)</label>
+      <input type="number" id="actionIconHeightPx" value="28" />
+      <label for="actionIconHeightPx"><i>(Set to the <b>height:</b> attribute used in userChrome.css)</i></label>
+      <br />
+
+      <h3>Fonts</h3>
+      <label for="maxFontSize">Max Font Size</label>
+      <input type="number" id="maxFontSize" value="18" />
+      <br />
+
+      <label for="fontWeight">Font Weight</label>
+      <input type="number" id="fontWeight" min="100" max="900" step="100" value="100" />
+      <br />
     </div>
-    <div>
-      <label for="titlePrefix">Text prefix for the title tooltip:</label> <input type="text" id="titlePrefix" value="Open tabs: " />
+
+    <!--
+    <div data-if="n2">
+      <input type="checkbox" id="badgeBgColorEnabled" checked />
+      <input type="color" id="badgeBgColor" value="#4b4b4b" />
+      <label for="badgeBgColor">Badge background color</label>
     </div>
-    <p><input type="submit" value="Save" /> <input type="reset" value="Reset values to default" /></p>
+    -->
+
+    <p>
+      <input type="submit" value="Save" />
+      <input type="reset" value="Reset values to default" />
+    </p>
   </form>
   <script type="text/javascript" src="options.js"></script>
 </html>

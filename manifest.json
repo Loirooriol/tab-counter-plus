@@ -3,7 +3,7 @@
   "short_name": "Tab Counter",
   "author": "Jonathon Merz",
   "homepage_url": "https://github.com/jmmerz/tab-counter-plus-plus-jmm",
-  "version": "1.0",
+  "version": "1.2.1",
   "description": "Shows the number of tabs in each window and current tab index.",
   "manifest_version": 2,
   "applications": {
@@ -13,6 +13,7 @@
     }
   },
   "icons": {
+    "16": "icon16.gif",
     "64": "icon.svg"
   },
   "permissions": [
@@ -20,14 +21,16 @@
   ],
   "browser_action": {
     "browser_style": true,
-    "default_icon": "icon.svg",
+    "default_icon": {
+      "16": "icon16.gif",
+      "64": "icon.svg"
+    },
     "default_popup": "popup.html"
   },
   "options_ui": {
     "page": "options.html"
   },
   "background": {
-    "scripts": ["windowId-polyfill.js", "background.js"],
-    "persistent": true
+    "scripts": ["windowId-polyfill.js", "background.js"]
   }
 }

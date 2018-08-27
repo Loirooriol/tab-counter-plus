@@ -15,42 +15,56 @@
  */
 
 (async function() {
-  function getValue(input) {
-    switch (input.type) {
+  function getValue(item) {
+    switch (item.type) {
       case "checkbox":
-        return input.checked;
+        return item.checked;
       case "number":
-        return input.valueAsNumber;
+        return item.valueAsNumber;
+      case undefined:
+        // RadioNodeList
+        let {value} = item;
+        try {
+          let parsed = JSON.parse(value);
+          if (Object(parsed) !== parsed) {
+            return parsed;
+          }
+        } catch (error) {}
+        return value;
       default:
-        return input.value;
+        return item.value;
     }
   }
-  function setValue(input, value) {
-    switch (input.type) {
+  function setValue(item, value) {
+    switch (item.type) {
       case "checkbox":
-        return input.checked = value;
+        return item.checked = value;
       case "number":
-        return input.valueAsNumber = value;
+        return item.valueAsNumber = value;
       default:
-        return input.value = value;
+        return item.value = value;
     }
   }
   let prefs = await browser.runtime.sendMessage("getPrefs");
   async function savePrefs() {
     let newPrefs = {};
     for (let pref of Object.keys(prefs)) {
-      let element = document.getElementById(pref);
-      if (!element.validity.valid) {
+      let item = elements.namedItem(pref);
+      if (item.nodeType && !item.validity.valid) {
         return;
       }
-      newPrefs[pref] = getValue(element);
+      newPrefs[pref] = getValue(item);
     }
     await browser.storage.local.set(newPrefs);
     Object.assign(prefs, newPrefs);
     browser.runtime.reload();
   }
+  let {elements} = document.forms[0];
   for (let [pref, value] of Object.entries(prefs)) {
-    setValue(document.getElementById(pref), value);
+    let item = elements.namedItem(pref);
+    if (item) {
+      setValue(item, value);
+    }
   }
   document.querySelector("form").addEventListener("submit", function(event) {
     event.preventDefault();
