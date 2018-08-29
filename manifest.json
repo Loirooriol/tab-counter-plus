@@ -1,14 +1,14 @@
 {
-  "name": "Tab Counter++ (JMM)",
-  "short_name": "Tab Counter",
+  "name": "Tab Counter Wide",
+  "short_name": "Tab Counter Wide",
   "author": "Jonathon Merz",
-  "homepage_url": "https://github.com/jmmerz/tab-counter-plus-plus-jmm",
+  "homepage_url": "https://github.com/jmmerz/tab-counter-wide",
   "version": "1.2.1",
   "description": "Shows the number of tabs in each window and current tab index.",
   "manifest_version": 2,
   "applications": {
     "gecko": {
-      "id": "tab-counter-plus-plus-jmm@jmmerz.github",
+      "id": "tab-counter-wide@jmmerz.github",
       "strict_min_version": "52.0"
     }
   },
