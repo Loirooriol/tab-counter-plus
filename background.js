@@ -117,6 +117,10 @@ function increase(windowId, increment) {
       let color = prefs.badgeColorEnabled ? prefs.badgeColor : "transparent";
       browser.browserAction.setBadgeTextColor({color});
     }
+  } else if (!prefs.countAll) {
+    // Set a transparent icon globally to prevent the default icon from flickering
+    // when opening a new window.
+    browser.browserAction.setIcon({imageData: new ImageData(1, 1)});
   }
 
   // The windowId parameter was added in Firefox 62, polyfill it for previous versions.
