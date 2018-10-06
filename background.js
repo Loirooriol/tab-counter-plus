@@ -32,6 +32,37 @@ let numTabs = new Map();
 let lastTime = new Map();
 let allWindows = undefined;
 
+function svgDataIcon(text) {
+  let serializer = new XMLSerializer();
+  let doc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
+  let root = doc.documentElement;
+  root.setAttribute("width", "16");
+  root.setAttribute("height", "16");
+  let node = doc.createElementNS(root.namespaceURI, "text");
+  node.setAttribute("x", "50%");
+  node.setAttribute("y", "50%");
+  node.setAttribute("dominant-baseline", "central");
+  node.setAttribute("text-anchor", "middle");
+  node.setAttribute("font-family", "'Segoe UI', 'DejaVu Sans', sans-serif");
+  root.appendChild(node);
+  svgDataIcon = function(text) {
+    let l = text.length;
+    node.setAttribute("font-size", `${14-l}px`);
+    node.setAttribute("fill", prefs.colorEnabled ? prefs.color : "transparent");
+    root.setAttribute("background-color", prefs.bgColorEnabled ? prefs.bgColor : "transparent");
+    if (l > 2) {
+      node.setAttribute("text-length", "100%");
+      node.setAttribute("length-adjust", "spacingAndGlyphs");
+    } else {
+      node.removeAttribute("text-length");
+      node.removeAttribute("length-adjust");
+    }
+    node.textContent = text;
+    return "data:image/svg+xml," + encodeURIComponent(serializer.serializeToString(doc));
+  };
+  return svgDataIcon(text);
+}
+
 function show(windowId, num = -1) {
   // Debounce if there are multiple calls in a short amount of time.
   let last = lastTime.get(windowId);
@@ -59,30 +90,7 @@ function show(windowId, num = -1) {
   if (prefs.useBadge) {
     browser.browserAction.setBadgeText({ text, windowId });
   } else {
-    let parseColor = function(color, enabled) {
-      return enabled ? color.replace(/[^#\w]/g, "") : "transparent";
-    };
-    let l = text.length;
-    let path = "data:image/svg+xml," + encodeURIComponent(`<?xml version="1.0" encoding="utf-8"?>
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <style type="text/css"><![CDATA[
-      text {
-        dominant-baseline: central;
-        font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
-        font-size: ${14-l}px;
-        text-anchor: middle;
-        fill: ${parseColor(prefs.color, prefs.colorEnabled)};
-      }
-      svg {
-        background-color: ${parseColor(prefs.bgColor, prefs.bgColorEnabled)};
-      }
-      ]]></style>
-      <text x="50%" y="50%"
-        ${l > 2 ? 'textLength="100%"' : ''}
-        ${l > 2 ? 'lengthAdjust="spacingAndGlyphs"' : ''}
-      >${text}</text>
-    </svg>`);
-    browser.browserAction.setIcon({ path, windowId });
+    browser.browserAction.setIcon({ path: svgDataIcon(text), windowId });
   }
 }
 
