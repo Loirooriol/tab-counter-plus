@@ -49,7 +49,7 @@ function svgDataIcon(text) {
     let l = text.length;
     node.setAttribute("font-size", `${14-l}px`);
     node.setAttribute("fill", prefs.colorEnabled ? prefs.color : "transparent");
-    root.setAttribute("background-color", prefs.bgColorEnabled ? prefs.bgColor : "transparent");
+    root.style.backgroundColor = prefs.bgColorEnabled ? prefs.bgColor : "transparent";
     if (l > 2) {
       node.setAttribute("textLength", "100%");
       node.setAttribute("lengthAdjust", "spacingAndGlyphs");
