@@ -51,11 +51,11 @@ function svgDataIcon(text) {
     node.setAttribute("fill", prefs.colorEnabled ? prefs.color : "transparent");
     root.setAttribute("background-color", prefs.bgColorEnabled ? prefs.bgColor : "transparent");
     if (l > 2) {
-      node.setAttribute("text-length", "100%");
-      node.setAttribute("length-adjust", "spacingAndGlyphs");
+      node.setAttribute("textLength", "100%");
+      node.setAttribute("lengthAdjust", "spacingAndGlyphs");
     } else {
-      node.removeAttribute("text-length");
-      node.removeAttribute("length-adjust");
+      node.removeAttribute("textLength");
+      node.removeAttribute("lengthAdjust");
     }
     node.textContent = text;
     return "data:image/svg+xml," + encodeURIComponent(serializer.serializeToString(doc));
