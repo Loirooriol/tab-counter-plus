@@ -41,15 +41,17 @@ function svgDataIcon(text) {
   let node = doc.createElementNS(root.namespaceURI, "text");
   node.setAttribute("x", "50%");
   node.setAttribute("y", "50%");
-  node.setAttribute("dominant-baseline", "central");
-  node.setAttribute("text-anchor", "middle");
-  node.setAttribute("font-family", "'Segoe UI', 'DejaVu Sans', sans-serif");
+  Object.assign(node.style, {
+    dominantBaseline: "central",
+    textAnchor: "middle",
+    fontFamily: "'Segoe UI', 'DejaVu Sans', sans-serif",
+    fill: prefs.colorEnabled ? prefs.color : "transparent",
+  });
+  root.style.backgroundColor = prefs.bgColorEnabled ? prefs.bgColor : "transparent";
   root.appendChild(node);
   svgDataIcon = function(text) {
     let l = text.length;
-    node.setAttribute("font-size", `${14-l}px`);
-    node.setAttribute("fill", prefs.colorEnabled ? prefs.color : "transparent");
-    root.style.backgroundColor = prefs.bgColorEnabled ? prefs.bgColor : "transparent";
+    node.style.fontSize = `${14-l}px`;
     if (l > 2) {
       node.setAttribute("textLength", "100%");
       node.setAttribute("lengthAdjust", "spacingAndGlyphs");
