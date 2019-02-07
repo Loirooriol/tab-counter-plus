@@ -1,6 +1,6 @@
 <!--
   Copyright 2018 Oriol Brufau
-  Additions 2018 by Jonathon Merz
+  Additions 2019 by Jonathon Merz
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -75,6 +75,44 @@
     -->
 
     <div>
+      <h3>Counter Size</h3>
+      <b><i>Must match the values set in your userChrome.css file. See the Readme file at Add-on Homepage above for instructions.</i></b>
+      <br />
+      <label for="actionIconWidthPx">Counter icon width (px)</label>
+      <input type="number" id="actionIconWidthPx" value="84" />
+      <label for="actionIconWidthPx"><i>(Set to the <b>width:</b> attribute used in userChrome.css)</i></label>
+      <br />
+
+      <label for="actionIconHeightPx">Counter icon height (px)</label>
+      <input type="number" id="actionIconHeightPx" value="28" />
+      <label for="actionIconHeightPx"><i>(Set to the <b>height:</b> attribute used in userChrome.css)</i></label>
+      <br />
+
+      <h3>Counter Colors</h3>
+
+      <label for="bgColor">Background color:</label>
+      <input type="checkbox" id="bgColorEnabled" />
+      <input type="color" id="bgColor" value="#ffffff" data-if="bgColorEnabled" />
+      <input type="color" id="bgColorDisabled" value="#ffffff" data-if="bgColorDisabled" disabled />
+      <br />
+
+      <label for="textColor">Text color:</label>
+      <input type="checkbox" id="textColorEnabled" checked />
+      <input type="color" id="textColor" value="#000000" data-if="textColorEnabled" />
+      <input type="color" id="textColorDisabled" value="#000000" data-if="textColorDisabled" disabled />
+      <br />
+
+      <h3>Counter Font</h3>
+      <label for="maxFontSize">Max Font Size</label>
+      <input type="number" id="maxFontSize" value="18" />
+      <br />
+
+      <label for="fontWeight">Font Weight</label>
+      <input type="number" id="fontWeight" min="100" max="900" step="100" value="100" />
+      <br />
+    </div>
+
+    <div>
       <h3>Hidden Tab Behavior</h3>
       <input type="radio" name="hiddenTabsOption" id="hiddenTabsOption-doNotShow" value="doNotShow" checked />
       <label for="hiddenTabsOption-doNotShow">Do not show hidden tab count</label>
@@ -101,41 +139,6 @@
       <input type="text" id="titleHiddenTabsPrefix" value="Hidden tabs: " />
       <br data-bigger />
 
-      <h3>Counter colors</h3>
-    </div>
-
-    <div>
-      <label for="bgColor">Background color:</label>
-      <input type="checkbox" id="bgColorEnabled" />
-      <input type="color" id="bgColor" value="#ffffff" data-if="bgColorEnabled" />
-      <input type="color" id="bgColor" value="#ffffff" data-if="bgColorDisabled" disabled />
-      <br />
-
-      <label for="textColor">Text color:</label>
-      <input type="checkbox" id="textColorEnabled" checked />
-      <input type="color" id="textColor" value="#000000" data-if="textColorEnabled" />
-      <input type="color" id="textColor" value="#000000" data-if="textColorDisabled" disabled />
-      <br />
-
-      <h3>Counter Size</h3> <!-- TODO: EXPLAIN: Must match userChrome.css -->
-      <label for="actionIconWidthPx">Counter icon width (px)</label>
-      <input type="number" id="actionIconWidthPx" value="84" />
-      <label for="actionIconWidthPx"><i>(Set to the <b>width:</b> attribute used in userChrome.css)</i></label>
-      <br />
-
-      <label for="actionIconHeightPx">Counter icon height (px)</label>
-      <input type="number" id="actionIconHeightPx" value="28" />
-      <label for="actionIconHeightPx"><i>(Set to the <b>height:</b> attribute used in userChrome.css)</i></label>
-      <br />
-
-      <h3>Fonts</h3>
-      <label for="maxFontSize">Max Font Size</label>
-      <input type="number" id="maxFontSize" value="18" />
-      <br />
-
-      <label for="fontWeight">Font Weight</label>
-      <input type="number" id="fontWeight" min="100" max="900" step="100" value="100" />
-      <br />
     </div>
 
     <!--

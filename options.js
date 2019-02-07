@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 Oriol Brufau
- * Additions 2018 by Jonathon Merz
+ * Additions 2019 by Jonathon Merz
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@
         return item.valueAsNumber;
       case undefined:
         // RadioNodeList
+        if(item.value) {
+          return item.value;
+        }
         let {value} = item;
         try {
           let parsed = JSON.parse(value);
@@ -31,7 +34,7 @@
             return parsed;
           }
         } catch (error) {}
-        return value;
+        return item.value;
       default:
         return item.value;
     }
