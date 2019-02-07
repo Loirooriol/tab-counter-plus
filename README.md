@@ -1,6 +1,6 @@
 # Tab Counter Wide
 
-This is a fork of Loirooriol's fantastic [Tab Counter Plus](https://github.com/Loirooriol/tab-counter-plus) to do some slightly messy customization. This may not be kept entirely up to date with the original repo. Please see the README on that page for full details.
+This is a fork of Loirooriol's fantastic [Tab Counter Plus](https://github.com/Loirooriol/tab-counter-plus) to do some slightly messy customization to allow for a wider tab counter. Please see the README on that page for full details.
 
 This provides the ability to include the current tab index in addition to the total number of tabs in the window.
 
@@ -30,6 +30,12 @@ toolbarbutton#tab-counter-wide_jmmerz_github-browser-action > .toolbarbutton-bad
 ```
 
 ## Version History:
+
+#### [1.4.0](https://github.com/jmmerz/tab-counter-wide/releases/tag/v1.4.0):
+* Fix performance issue that could cause browser to slow down, especially with a moderate to large
+  number of tabs open.
+* Switch to a better name.
+* Add standardized instructions to make this this extension more usable.
 
 #### [1.3.0](https://github.com/jmmerz/tab-counter-wide/releases/tag/v1.3.0):
 * Update name to "Tab Counter Wide" to better describe what's unique about it.
