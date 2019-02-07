@@ -3,7 +3,7 @@
   "short_name": "Tab Counter Wide",
   "author": "Jonathon Merz",
   "homepage_url": "https://github.com/jmmerz/tab-counter-wide",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Shows the number of tabs in each window and current tab index.",
   "manifest_version": 2,
   "applications": {

@@ -31,6 +31,9 @@ toolbarbutton#tab-counter-wide_jmmerz_github-browser-action > .toolbarbutton-bad
 
 ## Version History:
 
+#### [1.4.1](https://github.com/jmmerz/tab-counter-wide/releases/tag/v1.4.0):
+* Update minimum Firefox version to 62.0.
+
 #### [1.4.0](https://github.com/jmmerz/tab-counter-wide/releases/tag/v1.4.0):
 * Fix performance issue that could cause browser to slow down, especially with a moderate to large
   number of tabs open.
