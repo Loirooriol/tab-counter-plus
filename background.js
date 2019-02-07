@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 Oriol Brufau
- * Additions 2018 by Jonathon Merz
+ * Additions 2019 by Jonathon Merz
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ let HIDDEN_TABS_SHOW_WHEN_ZERO = "showWhenZero";
 
 let prefs = {
   actionIconHeightPx: 28,
-  actionIconWidthPx: 84,
+  actionIconWidthPx: 56,
   bgColor: "#ffffff",
   bgColorEnabled: false,
   textColor: "#000000",
@@ -61,24 +61,6 @@ let hiddenTabCounts = new Map();
 let tabIndexes = new Map();
 let lastTime = new Map();
 let removedTabIds = new Set();
-/**
- * This is unfortunately necessary to handle tracking hidden/un-hidden tabs
- * since there is no tabs.onHidden/onUnhidden event.
- */
-let windowRecountIntervals = new Map();
-
-function clearWindowRecountInterval(windowId) {
-    clearInterval(windowId);
-    windowRecountIntervals.delete(windowId);
-}
-
-function setWindowRecountInterval(windowId) {
-    windowRecountIntervals.set(windowId, 
-        setInterval(() => {
-            updateTabCountsAndIndexForWindow(windowId);
-        }, 500)
-    );
-}
 
 
 function updateIcon(windowId, tabNum = -1, tabCount = -1, hiddenTabCount = -1) {
@@ -119,12 +101,13 @@ function updateIcon(windowId, tabNum = -1, tabCount = -1, hiddenTabCount = -1) {
   let fontSize = 26-len;
   if(fontSize > prefs.maxFontSize) fontSize = prefs.maxFontSize;
   // for text-anchor below: Can use 'start' and replace x="50%" below with x="0%"...
+  // TODO: Try making font selectable? Other font: Consolas
   let path = "data:image/svg+xml," + encodeURIComponent(`<?xml version="1.0" encoding="utf-8"?>
   <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="${prefs.actionIconWidthPx}" height="${prefs.actionIconHeightPx}">
     <style type="text/css"><![CDATA[
     text {
       dominant-baseline: central;
-      font-family: Consolas, monospace;
+      font-family: monospace;
       font-size: ${fontSize}px;
       font-weight: ${prefs.fontWeight};
       text-anchor: middle;
@@ -209,6 +192,7 @@ function updateTabCountsAndIndexForTabsInWindow(windowId, tabs, updateInfo = DEF
   try {
     browser.browserAction.getBadgeText({windowId: browser.windows.WINDOW_ID_CURRENT});
   } catch (error) {
+  console.log("setting polyfill");
     windowIdPolyfill({
       title: "setTitle",
       text: "setBadgeText",
@@ -227,12 +211,10 @@ function updateTabCountsAndIndexForTabsInWindow(windowId, tabs, updateInfo = DEF
   browser.windows.onCreated.addListener(function ({id}) {
     //console.log("windows.onCreated: windowId: " + id);
     updateTabCountsAndIndexForWindow(id);
-    setWindowRecountInterval(id);
   });
 
   browser.windows.onRemoved.addListener(function (windowId) {
     //console.log("windows.onRemoved: windowId: " + windowId);
-    clearWindowRecountInterval(windowId);
     visibleTabCounts.delete(windowId);
     hiddenTabCounts.delete(windowId);
     tabIndexes.delete(windowId);
@@ -278,11 +260,16 @@ function updateTabCountsAndIndexForTabsInWindow(windowId, tabs, updateInfo = DEF
     updateTabCountsAndIndexForWindow(oldWindowId);
   });
 
+  // Use onUpdated with a filter to catch only for the "hidden" property as an
+  // "onHidden"/"onUnhidden" handler.
+  browser.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+    updateTabCountsAndIndexForWindow(tab.windowId);
+  }, {properties: ["hidden"]});
+
   // Initialize the counts at startup
   let windows = await browser.windows.getAll({populate: true});
   for (let {id, tabs} of windows) {
     updateTabCountsAndIndexForTabsInWindow(id, tabs);
-    setWindowRecountInterval(id);
   }
 
 })();
