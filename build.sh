@@ -10,6 +10,8 @@ IGNORE_FILES[${#IGNORE_FILES[@]}]='**/*.vim'
 IGNORE_FILES[${#IGNORE_FILES[@]}]='artifacts'
 IGNORE_FILES[${#IGNORE_FILES[@]}]='docs'
 IGNORE_FILES[${#IGNORE_FILES[@]}]='build.sh'
+IGNORE_FILES[${#IGNORE_FILES[@]}]='*.txt'
+IGNORE_FILES[${#IGNORE_FILES[@]}]='*.md'
 
 
 manifest="./manifest.json"
