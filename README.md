@@ -31,6 +31,9 @@ toolbarbutton#tab-counter-wide_jmmerz_github-browser-action > .toolbarbutton-bad
 
 ## Version History:
 
+#### [1.3.0](https://github.com/jmmerz/tab-counter-wide/releases/tag/v1.3.0):
+* Update name to "Tab Counter Wide" to better describe what's unique about it.
+
 #### [1.2.1](https://github.com/jmmerz/tab-counter-wide/releases/tag/v1.2.1):
 * Various updates/improvements
 * Provide additional options for counting hidden tabs.
