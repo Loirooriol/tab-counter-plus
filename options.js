@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
+let prefs = {
+  countAll: false,
+  useBadge: false,
+  bgColor: "#ffffff",
+  bgColorEnabled: false,
+  badgeBgColor: "#4b4b4b",
+  badgeBgColorEnabled: true,
+  color: "#000000",
+  colorEnabled: true,
+  badgeColor: "#ffffff",
+  badgeColorEnabled: true,
+  titlePrefix: "Open tabs: ",
+};
+
 (async function() {
   function getValue(item) {
     switch (item.type) {
@@ -35,6 +49,7 @@
         return item.value;
     }
   }
+
   function setValue(item, value) {
     switch (item.type) {
       case "checkbox":
@@ -45,18 +60,9 @@
         return item.value = value;
     }
   }
-  let prefs;
-  try {
-    prefs = await browser.runtime.sendMessage("getPrefs");
-  } catch (err) {
-    // The above does not work just after reloading the extension in Firefox 52-54.
-    // It throws "ReferenceError: browser is not defined" the first time, and then
-    // "Error: Could not establish connection. Receiving end does not exist.".
-    // In Firefox 55-56, options just disappear (bug 1385880), and no code runs.
-    // In Firefox 57-58, options are duplicated (bug 1409697), but both seem to work.
-    location.reload();
-    throw err;
-  }
+
+  prefs = await browser.storage.local.get(prefs);
+
   async function savePrefs() {
     let newPrefs = {};
     for (let pref of Object.keys(prefs)) {
@@ -68,8 +74,10 @@
     }
     await browser.storage.local.set(newPrefs);
     Object.assign(prefs, newPrefs);
-    browser.runtime.reload();
+
+    await browser.runtime.sendMessage("reload");
   }
+
   let {elements} = document.forms[0];
   for (let [pref, value] of Object.entries(prefs)) {
     let item = elements.namedItem(pref);
