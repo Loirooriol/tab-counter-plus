@@ -32,7 +32,7 @@ let numTabs = new Map();
 let lastTime = new Map();
 let allWindows = undefined;
 
-function svgDataIcon(text) {
+function svgDataIcon(text, prefs) {
   let serializer = new XMLSerializer();
   let doc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
   let root = doc.documentElement;
@@ -49,20 +49,17 @@ function svgDataIcon(text) {
   });
   root.style.backgroundColor = prefs.bgColorEnabled ? prefs.bgColor : "transparent";
   root.appendChild(node);
-  svgDataIcon = function(text) {
-    let l = text.length;
-    node.style.fontSize = `${14-l}px`;
-    if (l > 2) {
-      node.setAttribute("textLength", "100%");
-      node.setAttribute("lengthAdjust", "spacingAndGlyphs");
-    } else {
-      node.removeAttribute("textLength");
-      node.removeAttribute("lengthAdjust");
-    }
-    node.textContent = text;
-    return "data:image/svg+xml," + encodeURIComponent(serializer.serializeToString(doc));
-  };
-  return svgDataIcon(text);
+  let l = text.length;
+  node.style.fontSize = `${14-l}px`;
+  if (l > 2) {
+    node.setAttribute("textLength", "100%");
+    node.setAttribute("lengthAdjust", "spacingAndGlyphs");
+  } else {
+    node.removeAttribute("textLength");
+    node.removeAttribute("lengthAdjust");
+  }
+  node.textContent = text;
+  return "data:image/svg+xml," + encodeURIComponent(serializer.serializeToString(doc));
 }
 
 function show(windowId, num = -1) {
@@ -90,9 +87,11 @@ function show(windowId, num = -1) {
   let title = prefs.titlePrefix + text;
   browser.browserAction.setTitle({ title, windowId });
   if (prefs.useBadge) {
+    browser.browserAction.setIcon({ path: { 16: "icon16.gif", 64: "icon.svg" }, windowId });
     browser.browserAction.setBadgeText({ text, windowId });
   } else {
-    browser.browserAction.setIcon({ path: svgDataIcon(text), windowId });
+    browser.browserAction.setIcon({ path: svgDataIcon(text, prefs), windowId });
+    browser.browserAction.setBadgeText({ text: null, windowId });
   }
 }
 
@@ -110,13 +109,29 @@ function increase(windowId, increment) {
   update(windowId, num);
 }
 
-(async () => {
+function tabOnCreatedListener ({windowId}) {
+  increase(windowId, +1);
+}
+function tabOnRemovedListener(tabId, {windowId, isWindowClosing}) {
+  if (!isWindowClosing || prefs.countAll) {
+    increase(windowId, -1);
+  }
+}
+
+function tabOnAttachedListener(tabId, {newWindowId}) {
+  increase(newWindowId, +1);
+}
+function tabOnDetachedListener(tabId, {oldWindowId}) {
+  increase(oldWindowId, -1);
+}
+
+function windowOnRemovedListener(windowId) {
+  numTabs.delete(windowId);
+  lastTime.delete(windowId);
+}
+
+async function init() {
   prefs = await browser.storage.local.get(prefs);
-  browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request === "getPrefs") {
-      sendResponse(prefs);
-    }
-  });
 
   if (prefs.useBadge) {
     let bgColor = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
@@ -144,25 +159,12 @@ function increase(windowId, increment) {
     }, prefs.countAll);
   }
 
-  browser.tabs.onCreated.addListener(function ({windowId}) {
-    increase(windowId, +1);
-  });
-  browser.tabs.onRemoved.addListener(function (tabId, {windowId, isWindowClosing}) {
-    if (!isWindowClosing || prefs.countAll) {
-      increase(windowId, -1);
-    }
-  });
+  browser.tabs.onCreated.addListener(tabOnCreatedListener);
+  browser.tabs.onRemoved.addListener(tabOnRemovedListener);
   if (!prefs.countAll) {
-    browser.tabs.onAttached.addListener(function (tabId, {newWindowId}) {
-      increase(newWindowId, +1);
-    });
-    browser.tabs.onDetached.addListener(function (tabId, {oldWindowId}) {
-      increase(oldWindowId, -1);
-    });
-    browser.windows.onRemoved.addListener(function (windowId) {
-      numTabs.delete(windowId);
-      lastTime.delete(windowId);
-    });
+    browser.tabs.onAttached.addListener(tabOnAttachedListener);
+    browser.tabs.onDetached.addListener(tabOnDetachedListener);
+    browser.windows.onRemoved.addListener(windowOnRemovedListener);
     let windows = await browser.windows.getAll({populate: true});
     for (let {id, tabs: {length}} of windows) {
       update(id, length);
@@ -171,4 +173,22 @@ function increase(windowId, increment) {
     let tabs = await browser.tabs.query({});
     update(allWindows, tabs.length);
   }
-})();
+}
+
+browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request === "reload") {
+    numTabs = new Map();
+    lastTime = new Map();
+    allWindows = undefined;
+
+    browser.tabs.onCreated.removeListener(tabOnCreatedListener);
+    browser.tabs.onRemoved.removeListener(tabOnRemovedListener);
+    browser.tabs.onAttached.removeListener(tabOnAttachedListener);
+    browser.tabs.onDetached.removeListener(tabOnDetachedListener);
+    browser.windows.onRemoved.removeListener(windowOnRemovedListener);
+
+    init()
+  }
+});
+
+init();
