@@ -122,26 +122,12 @@ function increase(windowId, increment) {
     let bgColor = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
     browser.browserAction.setBadgeBackgroundColor({color: bgColor});
 
-    // Badge text color was added in Firefox 63
-    if (browser.browserAction.setBadgeTextColor) {
-      let color = prefs.badgeColorEnabled ? prefs.badgeColor : "transparent";
-      browser.browserAction.setBadgeTextColor({color});
-    }
+    let color = prefs.badgeColorEnabled ? prefs.badgeColor : "transparent";
+    browser.browserAction.setBadgeTextColor({color});
   } else if (!prefs.countAll) {
     // Set a transparent icon globally to prevent the default icon from flickering
     // when opening a new window.
     browser.browserAction.setIcon({imageData: new ImageData(1, 1)});
-  }
-
-  // The windowId parameter was added in Firefox 62, polyfill it for previous versions.
-  try {
-    browser.browserAction.getBadgeText({windowId: browser.windows.WINDOW_ID_CURRENT});
-  } catch (error) {
-    windowIdPolyfill({
-      title: "setTitle",
-      text: "setBadgeText",
-      path: "setIcon",
-    }, prefs.countAll);
   }
 
   browser.tabs.onCreated.addListener(function ({windowId}) {

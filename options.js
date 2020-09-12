@@ -45,18 +45,7 @@
         return item.value = value;
     }
   }
-  let prefs;
-  try {
-    prefs = await browser.runtime.sendMessage("getPrefs");
-  } catch (err) {
-    // The above does not work just after reloading the extension in Firefox 52-54.
-    // It throws "ReferenceError: browser is not defined" the first time, and then
-    // "Error: Could not establish connection. Receiving end does not exist.".
-    // In Firefox 55-56, options just disappear (bug 1385880), and no code runs.
-    // In Firefox 57-58, options are duplicated (bug 1409697), but both seem to work.
-    location.reload();
-    throw err;
-  }
+  let prefs = await browser.runtime.sendMessage("getPrefs");
   async function savePrefs() {
     let newPrefs = {};
     for (let pref of Object.keys(prefs)) {

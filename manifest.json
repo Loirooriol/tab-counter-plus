@@ -9,7 +9,7 @@
   "applications": {
     "gecko": {
       "id": "tab-counter-plus@Loirooriol",
-      "strict_min_version": "52.0"
+      "strict_min_version": "63.0"
     }
   },
   "icons": {
@@ -31,7 +31,7 @@
     "page": "options.html"
   },
   "background": {
-    "scripts": ["windowId-polyfill.js", "background.js"],
+    "scripts": ["background.js"],
     "persistent": true
   }
 }
