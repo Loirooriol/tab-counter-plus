@@ -30,4 +30,4 @@ You can download it from [Releases](https://github.com/Loirooriol/tab-counter-pl
 
 ### Why another tab counter add-on?
 
-The great [Michael Kraft's Tab Counter](https://addons.mozilla.org/firefox/addon/tab-counter/) doesn't work in Firefox Quantum. Some tab counter WebExtensions appeared, but WebExtension limitations made it difficult to create a good tab counter. Therefore, I decided to write my own extension which bypasses the issues as best as I could, and in parallel I started adding new WebExtension features to solve them.
+The great [Michael Kraft's Tab Counter](https://web.archive.org/web/20171114170649/https://addons.mozilla.org/en-US/firefox/addon/tab-counter/) doesn't work in Firefox Quantum. Some tab counter WebExtensions appeared, but WebExtension limitations made it difficult to create a good tab counter. Therefore, I decided to write my own extension which bypasses the issues as best as I could, and in parallel I started adding new WebExtension features to solve them.
