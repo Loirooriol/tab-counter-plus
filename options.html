@@ -41,8 +41,7 @@
     }
     input:nth-of-type(1):checked ~ [data-if ~= n1],
     input:nth-of-type(2):checked ~ [data-if ~= n2],
-    input:nth-of-type(3):checked ~ [data-if ~= n3],
-    .badge-color-api [data-if ~= badge-color-api] {
+    input:nth-of-type(3):checked ~ [data-if ~= n3] {
       display: block;
     }
     br[data-bigger] {
@@ -92,12 +91,11 @@
       <input type="checkbox" id="badgeBgColorEnabled" checked />
       <input type="color" id="badgeBgColor" value="#4b4b4b" />
       <label for="badgeBgColor">Badge background color</label>
+      <br />
 
-      <div data-if="badge-color-api">
-        <input type="checkbox" id="badgeColorEnabled" checked />
-        <input type="color" id="badgeColor" value="#000000" />
-        <label for="badgeColor">Badge text color</label>
-      </div>
+      <input type="checkbox" id="badgeColorEnabled" checked />
+      <input type="color" id="badgeColor" value="#000000" />
+      <label for="badgeColor">Badge text color</label>
     </div>
 
     <p>

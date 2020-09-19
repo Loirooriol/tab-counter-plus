@@ -73,7 +73,4 @@
   document.querySelector("form").addEventListener("reset", function() {
     requestAnimationFrame(savePrefs);
   });
-  if (browser.browserAction.setBadgeTextColor) {
-    document.body.classList.add("badge-color-api");
-  }
 })();
