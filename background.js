@@ -36,7 +36,8 @@ let events = {
   windows: new Map(),
 };
 
-function svgDataIcon(text) {
+let svgDataIcon;
+function svgDataIcon_(text) {
   let serializer = new XMLSerializer();
   let doc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
   let root = doc.documentElement;
@@ -114,25 +115,39 @@ function increase(windowId, increment) {
   update(windowId, num);
 }
 
-(async () => {
-  prefs = await browser.storage.local.get(prefs);
-  browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request === "getPrefs") {
-      sendResponse(prefs);
-    }
-  });
-
+function initCounters() {
   if (prefs.useBadge) {
     let bgColor = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
     browser.browserAction.setBadgeBackgroundColor({color: bgColor});
 
     let color = prefs.badgeColorEnabled ? prefs.badgeColor : "transparent";
     browser.browserAction.setBadgeTextColor({color});
-  } else if (!prefs.countAll) {
-    // Set a transparent icon globally to prevent the default icon from flickering
-    // when opening a new window.
-    browser.browserAction.setIcon({imageData: new ImageData(1, 1)});
+  } else {
+    svgDataIcon = svgDataIcon_;
+    if (!prefs.countAll) {
+      // Set a transparent icon globally to prevent the default icon from flickering
+      // when opening a new window.
+      browser.browserAction.setIcon({imageData: new ImageData(1, 1)});
+    }
   }
+}
+
+function clearCounters() {
+  for (let windowId of numTabs.keys()) {
+    browser.browserAction.setTitle({title: null, windowId});
+    if (prefs.useBadge) {
+      browser.browserAction.setBadgeText({text: null, windowId});
+    } else {
+      browser.browserAction.setIcon({path: null, windowId});
+    }
+  }
+  if (!prefs.useBadge) {
+    browser.browserAction.setIcon({path: null});
+  }
+}
+
+async function startup() {
+  initCounters();
 
   events.tabs.set("onCreated", ({windowId}) => {
     increase(windowId, +1);
@@ -166,4 +181,65 @@ function increase(windowId, increment) {
       browser[api][event].addListener(listener);
     }
   }
+}
+
+function shutdown() {
+  // Remove counter styles, this must happen before clearing `numTabs`.
+  clearCounters();
+
+  // Clear data
+  numTabs.clear();
+  lastTime.clear();
+
+  // Remove event listeners
+  for (let [api, listeners] of Object.entries(events)) {
+    for (let [event, listener] of listeners) {
+      browser[api][event].removeListener(listener);
+    }
+    listeners.clear();
+  }
+}
+
+(async () => {
+  prefs = await browser.storage.local.get(prefs);
+  browser.runtime.onMessage.addListener(async function (request, sender) {
+    switch (request.request) {
+      case "getPrefs": {
+        return prefs;
+      }
+      case "setPrefs": {
+        let newPrefs = request.data;
+        let updatePrefs = async function() {
+          Object.assign(prefs, newPrefs);
+          await browser.storage.local.set(newPrefs);
+        };
+
+        if ("countAll" in newPrefs) {
+          // Need to destroy all data and start from scratch
+          shutdown();
+          await updatePrefs();
+          await startup();
+          return;
+        }
+
+        // Only clear counters when changing the counter type, this avoids flickering
+        // in other cases.
+        if ("useBadge" in newPrefs) {
+          clearCounters();
+        }
+        await updatePrefs();
+        initCounters();
+
+        // Rerender current counters
+        for (let [windowId, num] of numTabs) {
+          show(windowId, num);
+        }
+        return;
+      }
+      default: {
+        throw new Error("Invalid request: " + request.request);
+      }
+    }
+  });
+  await startup();
 })();

@@ -21,8 +21,8 @@
         return item.checked;
       case "number":
         return item.valueAsNumber;
-      case undefined:
-        // RadioNodeList
+      case "radio":
+      case undefined: // RadioNodeList
         let {value} = item;
         try {
           let parsed = JSON.parse(value);
@@ -45,7 +45,9 @@
         return item.value = value;
     }
   }
-  let prefs = await browser.runtime.sendMessage("getPrefs");
+  let prefs = await browser.runtime.sendMessage({request: "getPrefs"});
+  let form = document.forms[0];
+  let {elements} = form;
   async function savePrefs() {
     let newPrefs = {};
     for (let pref of Object.keys(prefs)) {
@@ -53,24 +55,25 @@
       if (item.nodeType && !item.validity.valid) {
         return;
       }
-      newPrefs[pref] = getValue(item);
+      let value = getValue(item);
+      if (value !== prefs[pref]) {
+        newPrefs[pref] = value;
+      }
     }
-    await browser.storage.local.set(newPrefs);
     Object.assign(prefs, newPrefs);
-    browser.runtime.reload();
+    await browser.runtime.sendMessage({request: "setPrefs", data: newPrefs});
   }
-  let {elements} = document.forms[0];
   for (let [pref, value] of Object.entries(prefs)) {
     let item = elements.namedItem(pref);
     if (item) {
       setValue(item, value);
     }
   }
-  document.querySelector("form").addEventListener("submit", function(event) {
+  form.addEventListener("submit", (event) => {
     event.preventDefault();
     savePrefs();
   });
-  document.querySelector("form").addEventListener("reset", function() {
+  form.addEventListener("reset", () => {
     requestAnimationFrame(savePrefs);
   });
 })();
