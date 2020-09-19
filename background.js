@@ -31,6 +31,10 @@ let prefs = {
 let numTabs = new Map();
 let lastTime = new Map();
 let allWindows = undefined;
+let events = {
+  tabs: new Map(),
+  windows: new Map(),
+};
 
 function svgDataIcon(text) {
   let serializer = new XMLSerializer();
@@ -130,22 +134,22 @@ function increase(windowId, increment) {
     browser.browserAction.setIcon({imageData: new ImageData(1, 1)});
   }
 
-  browser.tabs.onCreated.addListener(function ({windowId}) {
+  events.tabs.set("onCreated", ({windowId}) => {
     increase(windowId, +1);
   });
-  browser.tabs.onRemoved.addListener(function (tabId, {windowId, isWindowClosing}) {
+  events.tabs.set("onRemoved", (tabId, {windowId, isWindowClosing}) => {
     if (!isWindowClosing || prefs.countAll) {
       increase(windowId, -1);
     }
   });
   if (!prefs.countAll) {
-    browser.tabs.onAttached.addListener(function (tabId, {newWindowId}) {
+    events.tabs.set("onAttached", (tabId, {newWindowId}) => {
       increase(newWindowId, +1);
     });
-    browser.tabs.onDetached.addListener(function (tabId, {oldWindowId}) {
+    events.tabs.set("onDetached", (tabId, {oldWindowId}) => {
       increase(oldWindowId, -1);
     });
-    browser.windows.onRemoved.addListener(function (windowId) {
+    events.windows.set("onRemoved", (windowId) => {
       numTabs.delete(windowId);
       lastTime.delete(windowId);
     });
@@ -156,5 +160,10 @@ function increase(windowId, increment) {
   } else {
     let tabs = await browser.tabs.query({});
     update(allWindows, tabs.length);
+  }
+  for (let [api, listeners] of Object.entries(events)) {
+    for (let [event, listener] of listeners) {
+      browser[api][event].addListener(listener);
+    }
   }
 })();
