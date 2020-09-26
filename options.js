@@ -65,12 +65,15 @@
     Object.assign(prefs, newPrefs);
     await browser.runtime.sendMessage({request: "setPrefs", data: newPrefs});
   }
-  for (let [pref, value] of Object.entries(prefs)) {
-    let item = elements.namedItem(pref);
-    if (item) {
-      setValue(item, value);
+  function setValues() {
+    for (let [pref, value] of Object.entries(prefs)) {
+      let item = elements.namedItem(pref);
+      if (item) {
+        setValue(item, value);
+      }
     }
   }
+  setValues();
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     savePrefs();
