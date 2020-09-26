@@ -48,16 +48,18 @@
   let prefs = await browser.runtime.sendMessage({request: "getPrefs"});
   let form = document.forms[0];
   let {elements} = form;
-  async function savePrefs() {
-    let newPrefs = {};
-    for (let pref of Object.keys(prefs)) {
-      let item = elements.namedItem(pref);
-      if (item.nodeType && !item.validity.valid) {
-        return;
-      }
-      let value = getValue(item);
-      if (value !== prefs[pref]) {
-        newPrefs[pref] = value;
+  async function savePrefs(newPrefs) {
+    if (!newPrefs) {
+      newPrefs = {};
+      for (let pref of Object.keys(prefs)) {
+        let item = elements.namedItem(pref);
+        if (item.nodeType && !item.validity.valid) {
+          return;
+        }
+        let value = getValue(item);
+        if (value !== prefs[pref]) {
+          newPrefs[pref] = value;
+        }
       }
     }
     Object.assign(prefs, newPrefs);
