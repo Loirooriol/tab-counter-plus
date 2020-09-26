@@ -45,40 +45,69 @@
         return item.value = value;
     }
   }
-  let prefs = await browser.runtime.sendMessage({request: "getPrefs"});
+  function objectEq(obj1, obj2) {
+    for (let [key, value] of Object.entries(obj1)) {
+      if (obj2[key] !== value) {
+        return false;
+      }
+    }
+    return true;
+  }
+  let defaultPrefs = {};
+  let initialPrefs = await browser.runtime.sendMessage({request: "getPrefs"});
+  let currentPrefs = Object.assign({}, initialPrefs);
   let form = document.forms[0];
   let {elements} = form;
+  let undo = document.getElementById("undo");
+  let reset = document.getElementById("reset");
   async function savePrefs(newPrefs) {
     if (!newPrefs) {
       newPrefs = {};
-      for (let pref of Object.keys(prefs)) {
+      for (let pref of Object.keys(currentPrefs)) {
         let item = elements.namedItem(pref);
         if (item.nodeType && !item.validity.valid) {
           return;
         }
-        let value = getValue(item);
-        if (value !== prefs[pref]) {
-          newPrefs[pref] = value;
-        }
+        newPrefs[pref] = getValue(item);
       }
     }
-    Object.assign(prefs, newPrefs);
+    Object.assign(currentPrefs, newPrefs);
     await browser.runtime.sendMessage({request: "setPrefs", data: newPrefs});
   }
-  function setValues() {
-    for (let [pref, value] of Object.entries(prefs)) {
+  function setValues(storeOldAsDefault) {
+    for (let [pref, value] of Object.entries(currentPrefs)) {
       let item = elements.namedItem(pref);
       if (item) {
+        if (storeOldAsDefault) {
+          defaultPrefs[pref] = getValue(item);
+        }
         setValue(item, value);
       }
     }
+    undo.disabled = true;
+    reset.disabled = objectEq(currentPrefs, defaultPrefs);
   }
-  setValues();
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    savePrefs();
+  setValues(true);
+  form.addEventListener("input", function({target}) {
+    if (target.validity.valid) {
+      let value = getValue(target);
+      let pref = target.name || target.id;
+      if (value !== currentPrefs[pref]) {
+        savePrefs({[pref]: value});
+        undo.disabled = objectEq(currentPrefs, initialPrefs);
+        reset.disabled = objectEq(currentPrefs, defaultPrefs);
+      }
+    }
+  });
+  undo.addEventListener("click", () => {
+    savePrefs(initialPrefs);
+    setValues(false);
   });
   form.addEventListener("reset", () => {
-    requestAnimationFrame(savePrefs);
+    requestAnimationFrame(() => {
+      savePrefs();
+      undo.disabled = objectEq(currentPrefs, initialPrefs);
+      reset.disabled = true;
+    });
   });
 })();
