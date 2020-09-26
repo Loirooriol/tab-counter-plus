@@ -135,15 +135,10 @@ function initCounters() {
 function clearCounters() {
   for (let windowId of numTabs.keys()) {
     browser.browserAction.setTitle({title: null, windowId});
-    if (prefs.useBadge) {
-      browser.browserAction.setBadgeText({text: null, windowId});
-    } else {
-      browser.browserAction.setIcon({path: null, windowId});
-    }
+    browser.browserAction.setBadgeText({text: null, windowId});
+    browser.browserAction.setIcon({path: null, windowId});
   }
-  if (!prefs.useBadge) {
-    browser.browserAction.setIcon({path: null});
-  }
+  browser.browserAction.setIcon({imageData: null});
 }
 
 async function startup() {
@@ -209,15 +204,12 @@ function shutdown() {
       }
       case "setPrefs": {
         let newPrefs = request.data;
-        let updatePrefs = async function() {
-          Object.assign(prefs, newPrefs);
-          await browser.storage.local.set(newPrefs);
-        };
+        Object.assign(prefs, newPrefs);
+        await browser.storage.local.set(newPrefs);
 
         if ("countAll" in newPrefs) {
           // Need to destroy all data and start from scratch
           shutdown();
-          await updatePrefs();
           await startup();
           return;
         }
@@ -227,7 +219,6 @@ function shutdown() {
         if ("useBadge" in newPrefs) {
           clearCounters();
         }
-        await updatePrefs();
         initCounters();
 
         // Rerender current counters
