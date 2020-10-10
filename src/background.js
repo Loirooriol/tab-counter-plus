@@ -197,7 +197,7 @@ function shutdown() {
 
 (async () => {
   prefs = await browser.storage.local.get(prefs);
-  browser.runtime.onMessage.addListener(async function (request, sender) {
+  browser.runtime.onMessage.addListener(async function (request) {
     switch (request.request) {
       case "getPrefs": {
         return prefs;

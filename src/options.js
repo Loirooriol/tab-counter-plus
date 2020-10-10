@@ -22,15 +22,21 @@
       case "number":
         return item.valueAsNumber;
       case "radio":
-      case undefined: // RadioNodeList
+      case undefined: { // RadioNodeList
         let {value} = item;
+        // Try to parse the value in case it's a literal (e.g. "true" -> true).
+        let parsed;
         try {
-          let parsed = JSON.parse(value);
-          if (Object(parsed) !== parsed) {
-            return parsed;
-          }
-        } catch (error) {}
+          parsed = JSON.parse(value);
+        } catch (error) {
+          return value;
+        }
+        // If this produced a primitive (not an object), return the primitive.
+        if (Object(parsed) !== parsed) {
+          return parsed;
+        }
         return value;
+      }
       default:
         return item.value;
     }
