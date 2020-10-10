@@ -1,0 +1,20 @@
+{
+  "name": "tab-counter-plus",
+  "description": "Shows the number of tabs in each window. Efficient and customizable.",
+  "author": "Oriol Brufau",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/Loirooriol/tab-counter-plus",
+  "bugs": {
+    "url": "https://github.com/Loirooriol/tab-counter-plus/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Loirooriol/tab-counter-plus.git"
+  },
+  "devDependencies": {
+    "eslint": "^7.10.0"
+  },
+  "scripts": {
+    "lint": "./node_modules/.bin/eslint ./src/"
+  }
+}
