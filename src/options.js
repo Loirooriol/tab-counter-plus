@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-(async function() {
+(async () => {
   function getValue(item) {
     switch (item.type) {
       case "checkbox":

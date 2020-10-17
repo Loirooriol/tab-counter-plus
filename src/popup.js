@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-(async function() {
+(async () => {
   const {length: thisWindow} = await browser.tabs.query({currentWindow: true});
   const {length: allWindows} = await browser.tabs.query({});
   document.getElementById('thisWindow').textContent = thisWindow;
