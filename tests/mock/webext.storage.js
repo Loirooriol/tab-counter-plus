@@ -5,9 +5,9 @@ class StorageArea {
   // The following methods match Firefox 81.
 
   async get(keys) {
-    const storage = this.#storage;
+    const stor = this.#storage;
     if (keys == null) {
-      return { ...storage };
+      return { ...stor };
     }
     if (typeof keys === "string") {
       keys = {[keys]: undefined};
@@ -16,8 +16,8 @@ class StorageArea {
     }
     return Object.fromEntries(
       Object.entries(keys).map(([prop, fallback]) => {
-        if (storage[prop] !== undefined) {
-          return [prop, storage[prop]];
+        if (stor[prop] !== undefined) {
+          return [prop, stor[prop]];
         }
         return [prop, fallback];
       }).filter(([/* prop */, value]) => value !== undefined)

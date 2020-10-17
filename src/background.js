@@ -55,6 +55,7 @@ function svgDataIcon_(text) {
   });
   root.style.backgroundColor = prefs.bgColorEnabled ? prefs.bgColor : "transparent";
   root.appendChild(node);
+  // eslint-disable-next-line no-shadow
   svgDataIcon = function(text) {
     const l = text.length;
     node.style.fontSize = `${14 - l}px`;

@@ -8,6 +8,7 @@
     "key-spacing": "error",
     "max-len": ["error", { "code": 90 }],
     "no-return-assign": "error",
+    "no-shadow": ["error", { "hoist": "all" }],
     "no-var": "error",
     "prefer-arrow-callback": "error",
     "prefer-const": "error",
