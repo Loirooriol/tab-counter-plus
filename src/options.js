@@ -44,11 +44,14 @@
   function setValue(item, value) {
     switch (item.type) {
       case "checkbox":
-        return item.checked = value;
+        item.checked = value;
+        return;
       case "number":
-        return item.valueAsNumber = value;
+        item.valueAsNumber = value;
+        return;
       default:
-        return item.value = value;
+        item.value = value;
+        return;
     }
   }
   function objectEq(obj1, obj2) {
