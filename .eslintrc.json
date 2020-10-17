@@ -3,6 +3,7 @@
   "extends": "eslint:recommended",
   "rules": {
     "arrow-parens": ["error", "always"],
+    "eqeqeq": ["error", "smart"],
     "no-return-assign": "error",
     "no-var": "error",
     "prefer-arrow-callback": "error",

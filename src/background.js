@@ -73,8 +73,8 @@ function svgDataIcon_(text) {
 function show(windowId, num = -1) {
   // Debounce if there are multiple calls in a short amount of time.
   const last = lastTime.get(windowId);
-  const notDelayed = num != -1;
-  if (notDelayed && last == -1) {
+  const notDelayed = num !== -1;
+  if (notDelayed && last === -1) {
     // There is a queued call.
     return;
   }
