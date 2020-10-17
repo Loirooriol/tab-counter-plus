@@ -57,7 +57,7 @@ function svgDataIcon_(text) {
   root.appendChild(node);
   svgDataIcon = function(text) {
     const l = text.length;
-    node.style.fontSize = `${14-l}px`;
+    node.style.fontSize = `${14 - l}px`;
     if (l > 2) {
       node.setAttribute("textLength", "100%");
       node.setAttribute("lengthAdjust", "spacingAndGlyphs");

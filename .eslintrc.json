@@ -11,6 +11,7 @@
     "prefer-arrow-callback": "error",
     "prefer-const": "error",
     "prefer-destructuring": "error",
-    "prefer-object-spread": "error"
+    "prefer-object-spread": "error",
+    "space-infix-ops": "error"
   }
 }
