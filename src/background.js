@@ -39,7 +39,8 @@ const events = {
 let svgDataIcon;
 function svgDataIcon_(text) {
   const serializer = new XMLSerializer();
-  const doc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
+  const doc = document.implementation.createDocument(
+    "http://www.w3.org/2000/svg", "svg", null);
   const root = doc.documentElement;
   root.setAttribute("width", "16");
   root.setAttribute("height", "16");
