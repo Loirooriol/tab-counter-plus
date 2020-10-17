@@ -197,6 +197,7 @@ function shutdown() {
 }
 
 (async () => {
+  // eslint-disable-next-line require-atomic-updates
   prefs = await browser.storage.local.get(prefs);
   browser.runtime.onMessage.addListener(async (request) => {
     switch (request.request) {
