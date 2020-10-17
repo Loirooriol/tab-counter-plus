@@ -94,7 +94,7 @@
     reset.disabled = objectEq(currentPrefs, defaultPrefs);
   }
   setValues(true);
-  form.addEventListener("input", function({target}) {
+  form.addEventListener("input", ({target}) => {
     if (target.validity.valid) {
       const value = getValue(target);
       const pref = target.name || target.id;
