@@ -1,0 +1,10 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
+  "env": {
+    "webextensions": true,
+    "browser": true,
+    "es6": true
+  }
+}
