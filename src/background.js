@@ -28,22 +28,22 @@ let prefs = {
   titlePrefix: "Open tabs: ",
 };
 
-let numTabs = new Map();
-let lastTime = new Map();
-let allWindows = undefined;
-let events = {
+const numTabs = new Map();
+const lastTime = new Map();
+const allWindows = undefined;
+const events = {
   tabs: new Map(),
   windows: new Map(),
 };
 
 let svgDataIcon;
 function svgDataIcon_(text) {
-  let serializer = new XMLSerializer();
-  let doc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
-  let root = doc.documentElement;
+  const serializer = new XMLSerializer();
+  const doc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
+  const root = doc.documentElement;
   root.setAttribute("width", "16");
   root.setAttribute("height", "16");
-  let node = doc.createElementNS(root.namespaceURI, "text");
+  const node = doc.createElementNS(root.namespaceURI, "text");
   node.setAttribute("x", "50%");
   node.setAttribute("y", "50%");
   Object.assign(node.style, {
@@ -55,7 +55,7 @@ function svgDataIcon_(text) {
   root.style.backgroundColor = prefs.bgColorEnabled ? prefs.bgColor : "transparent";
   root.appendChild(node);
   svgDataIcon = function(text) {
-    let l = text.length;
+    const l = text.length;
     node.style.fontSize = `${14-l}px`;
     if (l > 2) {
       node.setAttribute("textLength", "100%");
@@ -72,14 +72,14 @@ function svgDataIcon_(text) {
 
 function show(windowId, num = -1) {
   // Debounce if there are multiple calls in a short amount of time.
-  let last = lastTime.get(windowId);
-  let notDelayed = num != -1;
+  const last = lastTime.get(windowId);
+  const notDelayed = num != -1;
   if (notDelayed && last == -1) {
     // There is a queued call.
     return;
   }
-  let now = performance.now();
-  let time = 250 - now + last;
+  const now = performance.now();
+  const time = 250 - now + last;
   if (notDelayed && time > 0) {
     setTimeout(show, time, windowId);
     lastTime.set(windowId, -1);
@@ -91,8 +91,8 @@ function show(windowId, num = -1) {
   }
 
   // Show the counter
-  let text = num + "";
-  let title = prefs.titlePrefix + text;
+  const text = num + "";
+  const title = prefs.titlePrefix + text;
   browser.browserAction.setTitle({ title, windowId });
   if (prefs.useBadge) {
     browser.browserAction.setBadgeText({ text, windowId });
@@ -117,10 +117,10 @@ function increase(windowId, increment) {
 
 function initCounters() {
   if (prefs.useBadge) {
-    let bgColor = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
+    const bgColor = prefs.badgeBgColorEnabled ? prefs.badgeBgColor : "transparent";
     browser.browserAction.setBadgeBackgroundColor({color: bgColor});
 
-    let color = prefs.badgeColorEnabled ? prefs.badgeColor : "transparent";
+    const color = prefs.badgeColorEnabled ? prefs.badgeColor : "transparent";
     browser.browserAction.setBadgeTextColor({color});
   } else {
     svgDataIcon = svgDataIcon_;
@@ -133,7 +133,7 @@ function initCounters() {
 }
 
 function clearCounters() {
-  for (let windowId of numTabs.keys()) {
+  for (const windowId of numTabs.keys()) {
     browser.browserAction.setTitle({title: null, windowId});
     browser.browserAction.setBadgeText({text: null, windowId});
     browser.browserAction.setIcon({path: null, windowId});
@@ -163,16 +163,16 @@ async function startup() {
       numTabs.delete(windowId);
       lastTime.delete(windowId);
     });
-    let windows = await browser.windows.getAll({populate: true});
-    for (let {id, tabs: {length}} of windows) {
+    const windows = await browser.windows.getAll({populate: true});
+    for (const {id, tabs: {length}} of windows) {
       update(id, length);
     }
   } else {
-    let tabs = await browser.tabs.query({});
+    const tabs = await browser.tabs.query({});
     update(allWindows, tabs.length);
   }
-  for (let [api, listeners] of Object.entries(events)) {
-    for (let [event, listener] of listeners) {
+  for (const [api, listeners] of Object.entries(events)) {
+    for (const [event, listener] of listeners) {
       browser[api][event].addListener(listener);
     }
   }
@@ -187,8 +187,8 @@ function shutdown() {
   lastTime.clear();
 
   // Remove event listeners
-  for (let [api, listeners] of Object.entries(events)) {
-    for (let [event, listener] of listeners) {
+  for (const [api, listeners] of Object.entries(events)) {
+    for (const [event, listener] of listeners) {
       browser[api][event].removeListener(listener);
     }
     listeners.clear();
@@ -203,7 +203,7 @@ function shutdown() {
         return prefs;
       }
       case "setPrefs": {
-        let newPrefs = request.data;
+        const newPrefs = request.data;
         Object.assign(prefs, newPrefs);
         await browser.storage.local.set(newPrefs);
 
@@ -222,7 +222,7 @@ function shutdown() {
         initCounters();
 
         // Rerender current counters
-        for (let [windowId, num] of numTabs) {
+        for (const [windowId, num] of numTabs) {
           show(windowId, num);
         }
         return;

@@ -1,4 +1,8 @@
 {
   "root": true,
-  "extends": "eslint:recommended"
+  "extends": "eslint:recommended",
+  "rules": {
+    "no-var": "error",
+    "prefer-const": "error"
+  }
 }

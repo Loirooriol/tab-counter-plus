@@ -23,7 +23,7 @@
         return item.valueAsNumber;
       case "radio":
       case undefined: { // RadioNodeList
-        let {value} = item;
+        const {value} = item;
         // Try to parse the value in case it's a literal (e.g. "true" -> true).
         let parsed;
         try {
@@ -52,25 +52,25 @@
     }
   }
   function objectEq(obj1, obj2) {
-    for (let [key, value] of Object.entries(obj1)) {
+    for (const [key, value] of Object.entries(obj1)) {
       if (obj2[key] !== value) {
         return false;
       }
     }
     return true;
   }
-  let defaultPrefs = {};
-  let initialPrefs = await browser.runtime.sendMessage({request: "getPrefs"});
-  let currentPrefs = Object.assign({}, initialPrefs);
-  let form = document.forms[0];
-  let {elements} = form;
-  let undo = document.getElementById("undo");
-  let reset = document.getElementById("reset");
+  const defaultPrefs = {};
+  const initialPrefs = await browser.runtime.sendMessage({request: "getPrefs"});
+  const currentPrefs = Object.assign({}, initialPrefs);
+  const form = document.forms[0];
+  const {elements} = form;
+  const undo = document.getElementById("undo");
+  const reset = document.getElementById("reset");
   async function savePrefs(newPrefs) {
     if (!newPrefs) {
       newPrefs = {};
-      for (let pref of Object.keys(currentPrefs)) {
-        let item = elements.namedItem(pref);
+      for (const pref of Object.keys(currentPrefs)) {
+        const item = elements.namedItem(pref);
         if (item.nodeType && !item.validity.valid) {
           return;
         }
@@ -81,8 +81,8 @@
     await browser.runtime.sendMessage({request: "setPrefs", data: newPrefs});
   }
   function setValues(storeOldAsDefault) {
-    for (let [pref, value] of Object.entries(currentPrefs)) {
-      let item = elements.namedItem(pref);
+    for (const [pref, value] of Object.entries(currentPrefs)) {
+      const item = elements.namedItem(pref);
       if (item) {
         if (storeOldAsDefault) {
           defaultPrefs[pref] = getValue(item);
@@ -96,8 +96,8 @@
   setValues(true);
   form.addEventListener("input", function({target}) {
     if (target.validity.valid) {
-      let value = getValue(target);
-      let pref = target.name || target.id;
+      const value = getValue(target);
+      const pref = target.name || target.id;
       if (value !== currentPrefs[pref]) {
         savePrefs({[pref]: value});
         undo.disabled = objectEq(currentPrefs, initialPrefs);
