@@ -62,7 +62,7 @@
   const defaultPrefs = {};
   const initialPrefs = await browser.runtime.sendMessage({request: "getPrefs"});
   const currentPrefs = Object.assign({}, initialPrefs);
-  const form = document.forms[0];
+  const [form] = document.forms;
   const {elements} = form;
   const undo = document.getElementById("undo");
   const reset = document.getElementById("reset");
