@@ -9,6 +9,7 @@
     "no-var": "error",
     "prefer-arrow-callback": "error",
     "prefer-const": "error",
-    "prefer-destructuring": "error"
+    "prefer-destructuring": "error",
+    "prefer-object-spread": "error"
   }
 }

@@ -7,7 +7,7 @@ class StorageArea {
   async get(keys) {
     const storage = this.#storage;
     if (keys == null) {
-      return Object.assign({}, storage);
+      return { ...storage };
     }
     if (typeof keys === "string") {
       keys = {[keys]: undefined};
