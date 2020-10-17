@@ -12,7 +12,7 @@ class StorageArea {
     if (typeof keys === "string") {
       keys = {[keys]: undefined};
     } else if (Array.isArray(keys)) {
-      keys = Object.fromEntries(keys.map(prop => [prop, undefined]));
+      keys = Object.fromEntries(keys.map((prop) => [prop, undefined]));
     }
     return Object.fromEntries(
       Object.entries(keys).map(([prop, fallback]) => {

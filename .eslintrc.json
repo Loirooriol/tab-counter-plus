@@ -2,6 +2,7 @@
   "root": true,
   "extends": "eslint:recommended",
   "rules": {
+    "arrow-parens": ["error", "always"],
     "no-var": "error",
     "prefer-const": "error"
   }
