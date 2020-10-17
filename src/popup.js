@@ -17,6 +17,6 @@
 (async () => {
   const {length: thisWindow} = await browser.tabs.query({currentWindow: true});
   const {length: allWindows} = await browser.tabs.query({});
-  document.getElementById('thisWindow').textContent = thisWindow;
-  document.getElementById('allWindows').textContent = allWindows;
+  document.getElementById("thisWindow").textContent = thisWindow;
+  document.getElementById("allWindows").textContent = allWindows;
 })();
