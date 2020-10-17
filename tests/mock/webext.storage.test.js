@@ -11,7 +11,7 @@ async function check(s) {
   await checkGet({a: undefined}, {});
   await checkGet({a: 1}, {a: 1});
   await checkGet({a: 1, b: undefined}, {a: 1});
-  await checkGet({a: 1, b: 2}, {a: 1, b:2});
+  await checkGet({a: 1, b: 2}, {a: 1, b: 2});
 
   // Store an item
   await expect(s.set({a: 10})).resolves.toBe(undefined);

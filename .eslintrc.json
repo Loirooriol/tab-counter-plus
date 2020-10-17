@@ -5,6 +5,7 @@
     "arrow-parens": ["error", "always"],
     "eqeqeq": ["error", "smart"],
     "func-names": ["error", "as-needed"],
+    "key-spacing": "error",
     "max-len": ["error", { "code": 90 }],
     "no-return-assign": "error",
     "no-var": "error",
