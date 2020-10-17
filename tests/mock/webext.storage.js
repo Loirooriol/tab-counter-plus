@@ -20,7 +20,7 @@ class StorageArea {
           return [prop, storage[prop]];
         }
         return [prop, fallback];
-      }).filter(([/*prop*/, value]) => value !== undefined)
+      }).filter(([/* prop */, value]) => value !== undefined)
     );
   }
 

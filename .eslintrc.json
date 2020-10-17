@@ -14,6 +14,7 @@
     "prefer-destructuring": "error",
     "prefer-object-spread": "error",
     "quotes": ["error", "double", { "avoidEscape": true }],
-    "space-infix-ops": "error"
+    "space-infix-ops": "error",
+    "spaced-comment": ["error", "always", { "block": { "balanced": true } }]
   }
 }
