@@ -49,7 +49,6 @@
     "prefer-template": "off",
     "quote-props": ["error", "as-needed"],
     "quotes": ["error", "double", {"avoidEscape": true}],
-    "require-await": "off",
     "sort-keys": "off",
     "space-before-function-paren": ["error", {"anonymous": "never", "named": "never"}],
     "spaced-comment": ["error", "always", {"block": {"balanced": true}}],
