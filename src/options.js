@@ -28,7 +28,7 @@
         let parsed;
         try {
           parsed = JSON.parse(value);
-        } catch (error) {
+        } catch(error) {
           return value;
         }
         // If this produced a primitive (not an object), return the primitive.

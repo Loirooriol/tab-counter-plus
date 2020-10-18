@@ -20,6 +20,7 @@
     "id-length": "off",
     "indent": ["error", 2, { "SwitchCase": 1 }],
     "init-declarations": "off",
+    "keyword-spacing": ["error", { "overrides": { "catch": { "after": false }}}],
     "line-comment-position": "off",
     "max-len": ["error", { "code": 90 }],
     "max-lines-per-function": "off",
