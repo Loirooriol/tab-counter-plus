@@ -95,11 +95,11 @@ function show(windowId, num = -1) {
   // Show the counter
   const text = num + "";
   const title = prefs.titlePrefix + text;
-  browser.browserAction.setTitle({ title, windowId });
+  browser.browserAction.setTitle({title, windowId});
   if (prefs.useBadge) {
-    browser.browserAction.setBadgeText({ text, windowId });
+    browser.browserAction.setBadgeText({text, windowId});
   } else {
-    browser.browserAction.setIcon({ path: svgDataIcon(text), windowId });
+    browser.browserAction.setIcon({path: svgDataIcon(text), windowId});
   }
 }
 
