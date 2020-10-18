@@ -4,5 +4,9 @@
     "node": true,
     "es2020": true,
     "jest": true
+  },
+  "rules": {
+    "default-case": "off",
+    "no-await-in-loop": "off"
   }
 }
