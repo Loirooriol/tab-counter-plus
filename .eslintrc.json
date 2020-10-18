@@ -28,7 +28,7 @@
     "max-lines": "off",
     "max-lines-per-function": "off",
     "max-statements": "off",
-    "multiline-comment-style": "off",
+    "multiline-comment-style": ["error", "separate-lines"],
     "multiline-ternary": ["error", "always-multiline"],
     "newline-per-chained-call": "off",
     "no-eq-null": "off",
