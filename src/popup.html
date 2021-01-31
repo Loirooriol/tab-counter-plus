@@ -21,14 +21,23 @@
       font: caption;
       user-select: none;
       cursor: default;
-      background: transparent;
+      background: #ffffff;
       color: #222426;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        background: #4a4a4f;
+        color: #f9f9fa;
+      }
     }
     body {
       display: flex;
       flex-direction: column;
       align-items: center;
       margin: 10px;
+      /* Firefox uses the background color of the body in the popup arrow.
+       Inherit it from :root, otherwise transparent would default to white */
+      background-color: inherit;
     }
     h1 {
       display: flex;
