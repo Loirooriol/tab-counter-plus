@@ -20,7 +20,6 @@
     "storage"
   ],
   "browser_action": {
-    "browser_style": true,
     "default_icon": {
       "16": "icon16.gif",
       "64": "icon.svg"
