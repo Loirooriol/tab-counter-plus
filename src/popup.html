@@ -42,7 +42,7 @@
     h1 {
       display: flex;
       align-items: center;
-      margin: 0 0 10px 0;
+      margin: 0;
       font-size: 1rem;
     }
     h1::before {
@@ -55,21 +55,45 @@
       background: url("icon.svg") 0 0 / 100% 100%;
     }
     dl {
-      display: grid;
-      grid-template-columns: repeat(2, max-content);
       margin: 0;
     }
-    dd {
+    dl.root {
+      display: grid;
+      grid-template-columns: repeat(2, max-content);
+      align-items: baseline;
+    }
+    dl.root > dt {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .group + dd, .group + dd > dl {
+      display: contents;
+    }
+    dt {
+      grid-column: 1;
+    }
+    dt.group {
+      grid-column: 1 / -1;
+    }
+    dd:not(.group + dd) {
+      font-variant-numeric: tabular-nums;
       margin-inline-start: 5px;
-      text-align: right;
+      justify-self: end;
     }
   </style>
   <h1>Tab Counter Plus</h1>
-  <dl>
-    <dt>This window:</dt>
-    <dd id="thisWindow"></dd>
-    <dt>All windows:</dt>
-    <dd id="allWindows"></dd>
+  <dl class="root">
+    <dt class="group">Tabs</dt>
+    <dd>
+      <dl>
+        <dt>This window:</dt>
+        <dd id="this-window"></dd>
+        <dt>All windows:</dt>
+        <dd id="all-windows"></dd>
+      </dl>
+    </dd>
+    <dt>Windows:</dt>
+    <dd id="num-windows"></dd>
   </dl>
   <script src="popup.js"></script>
 </html>
