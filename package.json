@@ -12,7 +12,6 @@
     "url": "git+https://github.com/Loirooriol/tab-counter-plus.git"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.16.5",
     "eslint": "^8.5.0",
     "jest": "^27.4.5"
   },
