@@ -66,7 +66,8 @@
       font-weight: bold;
       margin-top: 10px;
     }
-    .group + dd, .group + dd > dl {
+    .group + dd,
+    .group + dd > dl {
       display: contents;
     }
     dt {
@@ -94,6 +95,9 @@
     </dd>
     <dt>Windows:</dt>
     <dd id="num-windows"></dd>
+    <dt><button type="button" id="copy-button">Copy URLs</button></dt>
+    <dd id="copy-result"></dd>
   </dl>
+
   <script src="popup.js"></script>
 </html>

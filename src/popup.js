@@ -16,11 +16,11 @@
 
 (async () => {
   const [
-    {length: thisWindow},
-    {length: allWindows},
-    {length: numWindows},
+    { length: thisWindow },
+    { length: allWindows },
+    { length: numWindows },
   ] = await Promise.all([
-    browser.tabs.query({currentWindow: true}),
+    browser.tabs.query({ currentWindow: true }),
     browser.tabs.query({}),
     browser.windows.getAll(),
   ]);
@@ -28,3 +28,23 @@
   document.getElementById("all-windows").textContent = allWindows;
   document.getElementById("num-windows").textContent = numWindows;
 })();
+
+function copyTabs(tabs) {
+  let copy_result_element = document.getElementById("copy-result");
+
+  navigator.clipboard.writeText(tabs.map((tab) => tab.url).join("\n")).then(
+    () => {
+      /* clipboard successfully set */
+      copy_result_element.innerHTML = `<p style="color:green;">Copied!</p>`;
+    },
+    () => {
+      /* clipboard write failed */
+      copy_result_element.innerHTML = `<p style="color:darkred;">Error</p>`;
+    }
+  );
+}
+
+let copy_button = document.getElementById("copy-button");
+copy_button.addEventListener("click", () =>
+  browser.tabs.query({}).then(copyTabs, {})
+);
