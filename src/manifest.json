@@ -16,9 +16,7 @@
     "16": "icon16.gif",
     "64": "icon.svg"
   },
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage", "tabs", "clipboardWrite"],
   "browser_action": {
     "default_icon": {
       "16": "icon16.gif",
