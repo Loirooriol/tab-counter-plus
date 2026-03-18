@@ -16,7 +16,7 @@
     "@eslint/js": "^10.0.1",
     "eslint": "^10.0.3",
     "globals": "^17.4.0",
-    "jest": "^27.5.1"
+    "jest": "^30.3.0"
   },
   "scripts": {
     "lint": "./node_modules/.bin/eslint ./src/ ./tests/",
