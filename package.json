@@ -11,8 +11,11 @@
     "type": "git",
     "url": "git+https://github.com/Loirooriol/tab-counter-plus.git"
   },
+  "type": "module",
   "devDependencies": {
-    "eslint": "^8.25.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
     "jest": "^27.5.1"
   },
   "scripts": {
