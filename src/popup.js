@@ -15,16 +15,31 @@
 //
 
 (async () => {
-  const [
-    {length: thisWindow},
-    {length: allWindows},
-    {length: numWindows},
-  ] = await Promise.all([
-    browser.tabs.query({currentWindow: true}),
-    browser.tabs.query({}),
-    browser.windows.getAll(),
-  ]);
+  const windowList = await browser.windows.getAll();
+
+  let thisWindow = 0;
+  let allWindows = 0;
+  const numWindows = windowList.length;
+
+  const windowTabs = new Map();
+  for (const windowInfo of windowList) {
+    const id = windowInfo.id;
+    const count = (await browser.tabs.query({windowId: id})).length;
+    windowTabs.set(id, count);
+    if (windowInfo.focused) {
+      thisWindow = count;
+    }
+    allWindows += count;
+  }
+
   document.getElementById("this-window").textContent = thisWindow;
   document.getElementById("all-windows").textContent = allWindows;
   document.getElementById("num-windows").textContent = numWindows;
+
+  const elmDetails = document.getElementById("tabs-windows");
+  for (const count of windowTabs.values()) {
+    const elmCount = document.createElement("li");
+    elmCount.textContent = count;
+    elmDetails.appendChild(elmCount);
+  };
 })();
